@@ -4,6 +4,6 @@ namespace EventManagement.Data.Repository.IRepository
 {
     public interface IOrganizationRepository : IRepository<Organization>
     {
-        void Update(Organization entity);
+        Task<Organization> UpdateAsync(Organization entity);
     }
 }

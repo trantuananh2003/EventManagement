@@ -1,8 +1,12 @@
 ﻿using Azure;
 using EventManagement.Models;
-using EventManagement.Service.Organization;
+using EventManagement.Models.ModelsDto;
+using EventManagement.Models.ModelsDto.OrganizationDtos;
+using EventManagement.Service.OrganizationService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Security.Claims;
 
 namespace EventManagement.Controllers
 {
@@ -13,43 +17,111 @@ namespace EventManagement.Controllers
         private readonly IOrganizationService _organizationService;
         private readonly ApiResponse _apiResponse;
 
-        public OrganizationController(IOrganizationService organizationService) {
+        public OrganizationController(IOrganizationService organizationService)
+        {
             _organizationService = organizationService;
             _apiResponse = new ApiResponse();
         }
 
-        [HttpGet("getorganization/{id}")]
-        public async Task<ActionResult<ApiResponse>> GetOrganization(string id)
+        // Get organization of a user
+        [HttpGet("organization/{userId}", Name = "GetOrganizationByIdUser")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse>> Get([FromRoute] string userId)
         {
-            try
+            if (string.IsNullOrEmpty(userId))
             {
-                if (String.IsNullOrEmpty(id))
+                return BadRequest(new ApiResponse
                 {
-                    _apiResponse.StatusCode = HttpStatusCode.BadRequest;
-                    _apiResponse.IsSuccess = false;
-                    return BadRequest(_apiResponse);
-                }
-
-                var organization = _organizationService.GetOrganization(id);
-
-                if (organization == null)
-                {
-                    _apiResponse.StatusCode = HttpStatusCode.NotFound;
-                    _apiResponse.IsSuccess = false;
-                    return NotFound(_apiResponse);
-                }
-
-                _apiResponse.Result = organization;
-                _apiResponse.StatusCode = HttpStatusCode.OK;
-                _apiResponse.IsSuccess = true;
-                return Ok(_apiResponse);
+                    StatusCode = HttpStatusCode.BadRequest,
+                    IsSuccess = false
+                });
             }
-            catch (Exception ex)
+
+            var organization = await _organizationService.GetOrganizationByIdUser(userId);
+
+            if (organization == null)
             {
-                _apiResponse.IsSuccess = false;
-                _apiResponse.ErrorMessages = new List<String>() { ex.ToString() };
-                return BadRequest(_apiResponse);
+                return NotFound(new ApiResponse
+                {
+                    StatusCode = HttpStatusCode.NotFound,
+                    IsSuccess = false
+                });
             }
+
+            return Ok(new ApiResponse
+            {
+                Result = organization,
+                StatusCode = HttpStatusCode.OK,
+                IsSuccess = true
+            });
+        }
+
+        [HttpPost("organization")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse>> Post([FromBody] OrganizationCreateDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new ApiResponse
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    IsSuccess = false,
+                    ErrorMessages = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList()
+                });
+            }
+
+            await _organizationService.CreateOrganization(model);
+
+            return CreatedAtRoute("GetOrganizationByIdUser", new { userId = model.IdUserOwner }, new ApiResponse
+            {
+                StatusCode = HttpStatusCode.Created,
+                IsSuccess = true
+            });
+        }
+
+
+        [HttpPut("organization")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse>> Put([FromBody] OrganizationUpdateDto model)
+        {
+            if (model == null || !ModelState.IsValid)
+            {
+                return BadRequest(new ApiResponse
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    IsSuccess = false,
+                    ErrorMessages = new List<string> { "Invalid organization data." }
+                });
+            }
+
+            var existingOrganization = await _organizationService.GetOrganizationById(model.IdOrganization);
+            if (existingOrganization == null)
+            {
+                return NotFound(new ApiResponse
+                {
+                    StatusCode = HttpStatusCode.NotFound,
+                    IsSuccess = false
+                });
+            }
+
+            await _organizationService.UpdateOrganization(model);
+
+            return Ok(new ApiResponse
+            {
+                StatusCode = HttpStatusCode.OK,
+                IsSuccess = true
+            });
         }
     }
 }

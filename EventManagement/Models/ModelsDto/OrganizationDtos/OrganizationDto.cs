@@ -1,9 +1,8 @@
-﻿using EventManagement.Data.Models;
-
-namespace EventManagement.Models.ModelsDto
+﻿namespace EventManagement.Models.ModelsDto.OrganizationDtos
 {
-    public class OrganizationRequest
+    public class OrganizationDto
     {
+        public string IdOrganization { get; set; }
         public string NameOrganization { get; set; }
         public string Description { get; set; }
         public string City { get; set; }

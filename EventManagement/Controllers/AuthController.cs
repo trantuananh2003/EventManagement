@@ -96,7 +96,7 @@ namespace EventManagement.Controllers
             return Ok(_response);
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
         {
             ApplicationUser userFromDb = _db.ApplicationUsers

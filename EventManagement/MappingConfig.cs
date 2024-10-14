@@ -1,7 +1,8 @@
 ﻿using EventManagement.Data.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using AutoMapper;
-using EventManagement.Models.ModelsDto;
+using EventManagement.Models.ModelsDto.EventDtos;
+using EventManagement.Models.ModelsDto.OrganizationDtos;
+using EventManagement.Models.ModelsDto.AgendaDtos;
 
 namespace EventManagement
 {
@@ -9,7 +10,17 @@ namespace EventManagement
     {
         public MappingConfig()
         {
-            CreateMap<Organization, OrganizationResponse>().ReverseMap();
+            CreateMap<Organization, OrganizationDto>().ReverseMap();
+            CreateMap<Organization, OrganizationCreateDto>().ReverseMap();
+            CreateMap<Organization, OrganizationUpdateDto>().ReverseMap();
+
+            CreateMap<Event, EventDto>().ReverseMap();
+            CreateMap<Event, EventCreateDto>().ReverseMap();
+            CreateMap<Event, EventUpdateDto>().ReverseMap();
+
+            CreateMap<Agenda, AgendaDto>().ReverseMap();
+            CreateMap<Agenda, AgendaCreateDto>().ReverseMap();
+            CreateMap<Agenda, AgendaUpdateDto>().ReverseMap();
         }
     }
 }

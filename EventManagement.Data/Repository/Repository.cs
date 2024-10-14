@@ -7,85 +7,109 @@ namespace EventManagement.Data.Repository
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        public ApplicationDbContext _db;
-        internal DbSet<T> _dbSet;
+        private readonly ApplicationDbContext _db;
+        internal DbSet<T> dbSet;
 
         public Repository(ApplicationDbContext db)
         {
             _db = db;
-            _dbSet = _db.Set<T>();
+            dbSet = _db.Set<T>();
         }
 
-        public IEnumerable<T> GetAll(string includeProperties)
+        public async Task CreateAsync(T entity)
         {
-            IQueryable<T> query = _dbSet;
-            if (!string.IsNullOrEmpty(includeProperties))
+            try
             {
-                foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                await dbSet.AddAsync(entity);
+                await SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while creating the entity.", ex);
+            }
+        }
+
+        public async Task<T> GetAsync(Expression<Func<T, bool>>? filter = null, bool tracked = false, string? includeProperties = null)
+        {
+            try
+            {
+                IQueryable<T> query = dbSet;
+
+                if (!tracked)
                 {
-                    query = query.Include(includeProp);
+                    query = query.AsNoTracking();
                 }
-            }
-            return query.ToList();
-        }
 
-        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter, string includeProperties = null, bool tracked = false)
-        {
-            IQueryable<T> query;
-            if (tracked)
-            {
-                query = _dbSet;
-            }
-            else
-            {
-                query = _dbSet.AsNoTracking();
-            }
-            query = query.Where(filter);
-            if (!string.IsNullOrEmpty(includeProperties))
-            {
-                foreach (var property in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                if (filter != null)
                 {
-                    query = query.Include(property);
+                    query = query.Where(filter);
                 }
-            }
-            return query.ToList();
-        }
 
-        public T Get(Expression<Func<T, bool>> filter, string includeProperties = null, bool tracked = false)
-        {
-            IQueryable<T> query;
-            if (tracked)
-            {
-                query = _dbSet;
-            }
-            else
-            {
-                query = _dbSet.AsNoTracking();
-            }
-            query = query.Where(filter);
-            if (!string.IsNullOrEmpty(includeProperties))
-            {
-                foreach (var property in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                if (includeProperties != null)
                 {
-                    query = query.Include(property);
+                    foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        query = query.Include(includeProp);
+                    }
                 }
+
+                return await query.FirstOrDefaultAsync();
             }
-            return query.FirstOrDefault();
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while getting the entity.", ex);
+            }
         }
 
-        public void Remove(T entity)
+        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null)
         {
-            _db.Remove(entity);
+            try
+            {
+                IQueryable<T> query = dbSet;
+
+                if (filter != null)
+                {
+                    query = query.Where(filter);
+                }
+
+                if (includeProperties != null)
+                {
+                    foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        query = query.Include(includeProp);
+                    }
+                }
+                return await query.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while getting all the entities.", ex);
+            }
         }
 
-        public void Add(T entity)
+        public async Task RemoveAsync(T entity)
         {
-            _db.Add(entity);
+            try
+            {
+                dbSet.Remove(entity);
+                await SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while removing the entity.", ex);
+            }
         }
 
-        public void Save()
+        public async Task SaveAsync()
         {
-            _db.SaveChanges();
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while saving the changes.", ex);
+            }
         }
     }
 

@@ -9,11 +9,10 @@ namespace EventManagement.Data.Repository.IRepository
 {
     public interface IRepository<T> where T : class
     {
-        IEnumerable<T> GetAll(string? includeProperties);
-        IEnumerable<T> GetAll(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false);
-        T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false);
-        void Add(T entity);
-        void Remove(T entity);
-        void Save();
+        Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null);
+        Task<T> GetAsync(Expression<Func<T, bool>>? filter = null, bool tracked = false, string? includeProperties = null);
+        Task CreateAsync(T entity);
+        Task RemoveAsync(T entity);
+        Task SaveAsync();
     }
 }
