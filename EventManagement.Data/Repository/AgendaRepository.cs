@@ -15,16 +15,17 @@ namespace EventManagement.Data.Repository
 
         public async Task<Agenda> UpdateAsync(Agenda entity)
         {
-            Agenda agenda = await _db.Agendas.FindAsync(entity.IdAgenda);
-            if(agenda != null)
-            {
-                agenda.Title = entity.Title;
-                agenda.Description = entity.Description;
-                agenda.StartTime = entity.StartTime;
-                agenda.EndTime = entity.EndTime;
-                _db.Agendas.Update(entity);
-                await SaveAsync();
-            }
+            //Agenda agenda = await _db.Agendas.FindAsync(entity.IdAgenda);
+            //if(agenda != null)
+            //{
+            //    agenda.Title = entity.Title;
+            //    agenda.Description = entity.Description;
+            //    agenda.StartTime = entity.StartTime;
+            //    agenda.EndTime = entity.EndTime;
+
+            //}
+            _db.Agendas.Update(entity);
+            await SaveAsync();
             return entity;
         }
     }

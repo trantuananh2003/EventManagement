@@ -55,7 +55,7 @@ namespace EventManagement.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> Post([FromBody] EventCreateDto model)
+        public async Task<ActionResult<ApiResponse>> Post([FromForm] EventCreateDto model)
         {
             if (!ModelState.IsValid)
             {
@@ -81,7 +81,7 @@ namespace EventManagement.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> Put([FromBody] EventUpdateDto model)
+        public async Task<ActionResult<ApiResponse>> Put([FromForm] EventUpdateDto model)
         {
             if (model == null || string.IsNullOrEmpty(model.IdEvent) || !ModelState.IsValid)
             {

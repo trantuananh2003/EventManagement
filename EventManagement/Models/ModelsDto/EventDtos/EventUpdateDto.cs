@@ -9,9 +9,7 @@ namespace EventManagement.Models.ModelsDto.EventDtos
         [Required]
         public string NameEvent { get; set; }
         public string Description { get; set; }
-
-        public string UrlImage { get; set; }
-
+        public IFormFile? File { get; set; }
         public string Location { get; set; }
 
         [Required]

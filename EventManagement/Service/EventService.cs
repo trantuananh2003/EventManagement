@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EventManagement.Common;
 using EventManagement.Data.Models;
 using EventManagement.Data.Repository.IRepository;
 using EventManagement.Models.ModelsDto.EventDtos;
@@ -16,11 +17,13 @@ namespace EventManagement.Service.EventService
     {
         private readonly IEventRepository _dbEvent;
         private readonly IMapper _mapper;
+        private readonly IBlobService _blobService;
 
-        public EventService(IEventRepository dbEvent, IMapper mapper)
+        public EventService(IEventRepository dbEvent, IMapper mapper, IBlobService blobService)
         {
             _dbEvent = dbEvent;
             _mapper = mapper;
+            _blobService = blobService;
         }
 
         // Lấy thông tin event dựa trên idOrganization
@@ -53,8 +56,12 @@ namespace EventManagement.Service.EventService
         // Tạo mới event
         public async Task<EventDto> CreateEvent(EventCreateDto modelRequest)
         {
+            string fileName = $"{Guid.NewGuid()}{Path.GetExtension(modelRequest.File.FileName)}";
+
             var eventEntity = _mapper.Map<Event>(modelRequest);
             eventEntity.IdEvent = Guid.NewGuid().ToString(); // Tạo IdEvent mới
+            eventEntity.UrlImage = await _blobService.UploadBlob(fileName, SD.SD_Storage_Containter, modelRequest.File);
+
             await _dbEvent.CreateAsync(eventEntity); // Lưu event mới vào database
             return _mapper.Map<EventDto>(eventEntity);
         }
@@ -62,8 +69,19 @@ namespace EventManagement.Service.EventService
         // Cập nhật thông tin event
         public async Task UpdateEvent(EventUpdateDto modelRequest)
         {
-            var eventEntity = _mapper.Map<Event>(modelRequest);
+
+            //CHua xu ly viec mapping qua 
+            var eventEntity = await _dbEvent.GetAsync(u => u.IdEvent == modelRequest.IdEvent);
+            _mapper.Map(modelRequest, eventEntity);
+            if (modelRequest.File != null && modelRequest.File.Length > 0)
+            {
+                string fileName = $"{Guid.NewGuid()}{Path.GetExtension(modelRequest.File.FileName)}";
+                await _blobService.DeleteBlob(eventEntity.UrlImage.Split('/').Last(), SD.SD_Storage_Containter);
+                eventEntity.UrlImage = await _blobService.UploadBlob(fileName, SD.SD_Storage_Containter, modelRequest.File);
+            }
+
             await _dbEvent.UpdateAsync(eventEntity);
         }
+
     }
 }

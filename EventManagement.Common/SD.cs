@@ -18,5 +18,7 @@ namespace EventManagement.Common
         public const string EventType_Single = "single";
         public const string EventType_Multiple = "multiple";
 
+        public const string SD_Storage_Containter = "eventmanagement";
+
     }
 }

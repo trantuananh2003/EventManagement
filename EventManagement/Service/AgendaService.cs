@@ -52,8 +52,12 @@ namespace EventManagement.Service
 
         public async Task UpdateAgenda(AgendaUpdateDto modelRequest)
         {
-            var agendaEntity = _mapper.Map<Agenda>(modelRequest);
-            await _dbAgenda.UpdateAsync(agendaEntity);
+            Agenda agenda = await _dbAgenda.GetAsync(u => u.IdAgenda == modelRequest.IdAgenda);
+            if (agenda != null)
+            {
+                _mapper.Map(modelRequest, agenda);
+            }
+            await _dbAgenda.UpdateAsync(agenda);
         }
     }
 }

@@ -3,6 +3,7 @@ using AutoMapper;
 using EventManagement.Models.ModelsDto.EventDtos;
 using EventManagement.Models.ModelsDto.OrganizationDtos;
 using EventManagement.Models.ModelsDto.AgendaDtos;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace EventManagement
 {
@@ -16,11 +17,12 @@ namespace EventManagement
 
             CreateMap<Event, EventDto>().ReverseMap();
             CreateMap<Event, EventCreateDto>().ReverseMap();
-            CreateMap<Event, EventUpdateDto>().ReverseMap();
+            CreateMap<EventUpdateDto, Event>()
+                .ForMember(dest => dest.OrganizationId, opt => opt.Ignore());
 
             CreateMap<Agenda, AgendaDto>().ReverseMap();
             CreateMap<Agenda, AgendaCreateDto>().ReverseMap();
-            CreateMap<Agenda, AgendaUpdateDto>().ReverseMap();
+            CreateMap<AgendaUpdateDto, Agenda>().ReverseMap();
         }
     }
 }

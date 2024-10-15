@@ -1,16 +1,15 @@
+using Azure.Storage.Blobs;
 using EventManagement;
 using EventManagement.Data.DataConnect;
 using EventManagement.Data.Models;
 using EventManagement.Data.Repository;
 using EventManagement.Data.Repository.IRepository;
-using EventManagement.Extensions;
 using EventManagement.Filter;
 using EventManagement.Middleware;
 using EventManagement.Service;
 using EventManagement.Service.EventService;
 using EventManagement.Service.OrganizationService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +41,8 @@ builder.Services.AddControllers(option => option.Filters.Add<CustomExceptionFilt
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
 //Service Bussiness
-builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddSingleton(u => new BlobServiceClient(builder.Configuration.GetConnectionString("StorageAccount")));
+builder.Services.AddSingleton<IBlobService, BlobService>(); builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
