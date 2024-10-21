@@ -66,6 +66,7 @@ namespace EventManagement.Controllers
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim("email", userFromDb.Email),
+                    new Claim("fullName", userFromDb.FullName),
                     new Claim("id", userFromDb.Id.ToString()),
                     new Claim(ClaimTypes.Email, userFromDb.UserName.ToString()),
                     new Claim(ClaimTypes.Role, roles.FirstOrDefault()),
@@ -79,7 +80,8 @@ namespace EventManagement.Controllers
             LoginResponseDto loginResponse = new()
             {
                 Email = userFromDb.Email,
-                Token = tokenHandler.WriteToken(token)
+                Token = tokenHandler.WriteToken(token),
+                FullName = userFromDb.FullName
             };
 
             if (loginResponse.Email == null || string.IsNullOrEmpty(loginResponse.Token))
@@ -114,7 +116,7 @@ namespace EventManagement.Controllers
             {
                 UserName = model.Email,
                 Email = model.Email,
-                FullNameUser = model.FullNameUser
+                FullName = model.FullName
             };
 
             try

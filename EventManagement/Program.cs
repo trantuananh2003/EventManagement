@@ -106,6 +106,16 @@ builder.Services.AddSwaggerGen(options => {
 
 var app = builder.Build();
 
+// Add CORS policy
+app.UseCors(opt =>
+{
+    opt.AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowAnyOrigin(); // Allow any origin to bypass CORS policy
+});
+
+// Rest of the code...
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

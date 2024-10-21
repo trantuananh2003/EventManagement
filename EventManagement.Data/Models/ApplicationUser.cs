@@ -9,6 +9,6 @@ namespace EventManagement.Data.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        public string FullNameUser { get; set; }
+        public string FullName { get; set; }
     }
 }
