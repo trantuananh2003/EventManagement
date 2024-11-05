@@ -56,6 +56,8 @@ builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<ISearchQuery, SearchQuery>();
 builder.Services.AddScoped<IEventDetailViewQuery, EventDetailViewQuery>();
+builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+builder.Services.AddScoped<IOrderHeaderRepository, OrderHeaderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
 //Service controller
