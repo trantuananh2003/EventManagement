@@ -2,6 +2,7 @@ using Azure.Storage.Blobs;
 using EventManagement;
 using EventManagement.Data.DataConnect;
 using EventManagement.Data.Models;
+using EventManagement.Data.Queries;
 using EventManagement.Data.Repository;
 using EventManagement.Data.Repository.IRepository;
 using EventManagement.Filter;
@@ -48,6 +49,14 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IAgendaService, AgendaService>();
 builder.Services.AddScoped<IAgendaRepository, AgendaRepository>();
+builder.Services.AddScoped<IEventDateRepository, EventDateRepository>();
+builder.Services.AddScoped<IEventDateService, EventDateService>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<ISearchQuery, SearchQuery>();
+builder.Services.AddScoped<IEventDetailViewQuery, EventDetailViewQuery>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 //Service controller
 builder.Services.AddControllers();
@@ -122,7 +131,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 //app.UseExceptionHandler("api/ErrorHandling/ProcessError");
 //app.HandleError();
 app.UseMiddleware<CustomExceptionMiddleware>();

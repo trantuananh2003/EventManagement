@@ -4,6 +4,7 @@ using EventManagement.Data.DataConnect;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventManagement.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241028024050_AddTicketTable")]
+    partial class AddTicketTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -180,73 +183,6 @@ namespace EventManagement.Data.Migrations
                     b.ToTable("EventDates");
                 });
 
-            modelBuilder.Entity("EventManagement.Data.Models.OrderDetail", b =>
-                {
-                    b.Property<string>("IdOrderDetail")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("NameTicket")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OrderHeaderId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TicketId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("IdOrderDetail");
-
-                    b.HasIndex("OrderHeaderId");
-
-                    b.HasIndex("TicketId")
-                        .IsUnique()
-                        .HasFilter("[TicketId] IS NOT NULL");
-
-                    b.ToTable("OrderDetails");
-                });
-
-            modelBuilder.Entity("EventManagement.Data.Models.OrderHeader", b =>
-                {
-                    b.Property<string>("IdOrderHeader")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("NumberPhone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PriceTotal")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StripePaymentIntentId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TotalItem")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("IdOrderHeader");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("OrderHeaders");
-                });
-
             modelBuilder.Entity("EventManagement.Data.Models.Organization", b =>
                 {
                     b.Property<string>("IdOrganization")
@@ -352,14 +288,14 @@ namespace EventManagement.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("SaleEndDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("date");
 
                     b.Property<string>("SaleMethod")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("SaleStartDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("date");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -375,7 +311,7 @@ namespace EventManagement.Data.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("Ticket");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -538,30 +474,6 @@ namespace EventManagement.Data.Migrations
                     b.Navigation("Event");
                 });
 
-            modelBuilder.Entity("EventManagement.Data.Models.OrderDetail", b =>
-                {
-                    b.HasOne("EventManagement.Data.Models.OrderHeader", "OrderHeader")
-                        .WithMany("OrderDetails")
-                        .HasForeignKey("OrderHeaderId");
-
-                    b.HasOne("EventManagement.Data.Models.Ticket", "Ticket")
-                        .WithOne()
-                        .HasForeignKey("EventManagement.Data.Models.OrderDetail", "TicketId");
-
-                    b.Navigation("OrderHeader");
-
-                    b.Navigation("Ticket");
-                });
-
-            modelBuilder.Entity("EventManagement.Data.Models.OrderHeader", b =>
-                {
-                    b.HasOne("EventManagement.Data.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("EventManagement.Data.Models.Organization", b =>
                 {
                     b.HasOne("EventManagement.Data.Models.ApplicationUser", "User")
@@ -648,11 +560,6 @@ namespace EventManagement.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("EventManagement.Data.Models.OrderHeader", b =>
-                {
-                    b.Navigation("OrderDetails");
                 });
 #pragma warning restore 612, 618
         }

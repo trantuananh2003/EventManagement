@@ -41,6 +41,18 @@ namespace EventManagement.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
+            if (!ModelState.IsValid)
+            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.IsSuccess = false;
+                _response.ErrorMessages = _response.ErrorMessages = ModelState
+                    .Where(ms => ms.Value.Errors.Any())
+                    .Select(ms => $"[{ms.Key}] : {ms.Value.Errors.FirstOrDefault()?.ErrorMessage}")
+                    .ToList();
+                return BadRequest(_response);
+            }
+
+
             ApplicationUser userFromDb = _db.ApplicationUsers
                         .FirstOrDefault(u => u.UserName.ToLower() == model.Email.ToLower());
 

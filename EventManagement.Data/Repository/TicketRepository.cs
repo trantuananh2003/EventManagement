@@ -10,17 +10,18 @@ using System.Threading.Tasks;
 
 namespace EventManagement.Data.Repository
 {
-    public class EventRepository : Repository<Event>, IEventRepository
+    public class TicketRepository : Repository<Ticket>, ITicketRepository
     {
         private readonly ApplicationDbContext _db;
 
-        public EventRepository(ApplicationDbContext db) : base(db) {
+        public TicketRepository(ApplicationDbContext db) : base(db)
+        {
             _db = db;
         }
 
-        public async Task<Event> UpdateAsync(Event entity)
+        public async Task<Ticket> UpdateAsync(Ticket entity)
         {
-            var model = _db.Events.Update(entity);
+            _db.Tickets.Update(entity);
             await _db.SaveChangesAsync();
             return entity;
         }

@@ -8,13 +8,13 @@ namespace EventManagement.Service.OrganizationService
 {
     public interface IOrganizationService
     {
-        Task<OrganizationDto> GetOrganizationByIdUser(string idUser);
-
         Task CreateOrganization(OrganizationCreateDto modelRequest);
 
         Task UpdateOrganization(OrganizationUpdateDto modelRequest);
 
         Task<OrganizationDto> GetOrganizationById(string id);
+        Task<OrganizationDto> GetOrganizationByIdUser(string idUserOwner);
+
     }
 
     public class OrganizationService : IOrganizationService
@@ -28,18 +28,6 @@ namespace EventManagement.Service.OrganizationService
             _dbOrganization = dbOrganization;
             _mapper = mapper;
             _userManager = userManager;
-        }
-
-        public async Task<OrganizationDto> GetOrganizationByIdUser(string idUser)
-        {
-            if (string.IsNullOrEmpty(idUser))
-            {
-                return null;
-            }
-
-            var organizationEntity = await _dbOrganization.GetAsync(u => u.IdUserOwner == idUser);
-            var organizationResponse = _mapper.Map<OrganizationDto>(organizationEntity);
-            return organizationResponse;
         }
 
         // Create organization
@@ -59,6 +47,13 @@ namespace EventManagement.Service.OrganizationService
         public async Task<OrganizationDto> GetOrganizationById(string id)
         {
             var organizationEntity = await _dbOrganization.GetAsync(u => u.IdOrganization == id);
+            var organizationReponse = _mapper.Map<OrganizationDto>(organizationEntity);
+            return organizationReponse;
+        }
+
+        public async Task<OrganizationDto> GetOrganizationByIdUser(string idUserOwner)
+        {
+            var organizationEntity = await _dbOrganization.GetAsync(u => u.IdUserOwner == idUserOwner);
             var organizationReponse = _mapper.Map<OrganizationDto>(organizationEntity);
             return organizationReponse;
         }

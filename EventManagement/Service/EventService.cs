@@ -9,6 +9,7 @@ namespace EventManagement.Service.EventService
     public interface IEventService
     {
         Task<EventDto> GetEvent(string idEvent);
+        Task<List<EventDto>> GetAllEvent(string idOrganization);
         Task<EventDto> CreateEvent(EventCreateDto modelRequest);
         Task UpdateEvent(EventUpdateDto modelRequest);
     }
@@ -51,6 +52,20 @@ namespace EventManagement.Service.EventService
                 // Có thể log lỗi ở đây nếu cần
                 return null;
             }
+        }
+
+        //Lấy toàn bộ thẻ 
+        public async Task<List<EventDto>> GetAllEvent(string idOrganization)
+        {
+            if (string.IsNullOrEmpty(idOrganization))
+            {
+                return null;
+            }
+
+            IEnumerable<Event> events = await _dbEvent.GetAllAsync(e => e.OrganizationId == idOrganization);
+            List<EventDto> listEventDto = _mapper.Map<List<EventDto>>(events);
+
+            return listEventDto;
         }
 
         // Tạo mới event

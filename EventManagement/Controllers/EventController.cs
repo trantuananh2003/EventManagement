@@ -2,7 +2,6 @@
 using EventManagement.Models.ModelsDto.EventDtos;
 using EventManagement.Service.EventService;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.FileProviders;
 using System.Net;
 
 namespace EventManagement.Controllers
@@ -21,7 +20,7 @@ namespace EventManagement.Controllers
         }
 
         // Lấy thông tin event dựa trên idOrganization
-        [HttpGet("event/{idEvent}", Name = "GetEvent")]
+        [HttpGet("{idEvent}", Name = "GetEvent")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -45,6 +44,31 @@ namespace EventManagement.Controllers
             }
 
             _apiResponse.Result = eventResult;
+            _apiResponse.StatusCode = HttpStatusCode.OK;
+            _apiResponse.IsSuccess = true;
+            return Ok(_apiResponse);
+        }   
+
+        [HttpGet("organization/{idOrganization}" , Name = "GetAll")]
+        public async Task<ActionResult<ApiResponse>> GetAll([FromRoute]string idOrganization)
+        {
+            if(string.IsNullOrEmpty(idOrganization))
+            {
+                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
+                _apiResponse.IsSuccess = false;
+                return BadRequest(_apiResponse);
+            }
+
+            List<EventDto> listEventDto = await _eventService.GetAllEvent(idOrganization);
+
+            if (listEventDto == null)
+            {
+                _apiResponse.StatusCode = HttpStatusCode.NotFound;
+                _apiResponse.IsSuccess = false;
+                return NotFound(_apiResponse);
+            }
+
+            _apiResponse.Result = listEventDto;
             _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);
@@ -76,13 +100,14 @@ namespace EventManagement.Controllers
         }
 
         // Cập nhật thông tin event
-        [HttpPut("event")]
+        [HttpPut("{idEvent}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> Put([FromForm] EventUpdateDto model)
+        public async Task<ActionResult<ApiResponse>> Put([FromForm] EventUpdateDto model, [FromRoute] string idEvent)
         {
+            model.IdEvent = idEvent;
             if (model == null || string.IsNullOrEmpty(model.IdEvent) || !ModelState.IsValid)
             {
                 _apiResponse.StatusCode = HttpStatusCode.BadRequest;

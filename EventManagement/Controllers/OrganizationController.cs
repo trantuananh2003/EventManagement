@@ -1,12 +1,9 @@
 ﻿using Azure;
 using EventManagement.Models;
-using EventManagement.Models.ModelsDto;
 using EventManagement.Models.ModelsDto.OrganizationDtos;
 using EventManagement.Service.OrganizationService;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using System.Security.Claims;
 
 namespace EventManagement.Controllers
 {
@@ -24,13 +21,16 @@ namespace EventManagement.Controllers
         }
 
         // Get organization of a user
-        [HttpGet("organization/{userId}", Name = "GetOrganizationByIdUser")]
+        [HttpGet("{userId}", Name = "GetOrganizationByIdUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse>> Get([FromRoute] string userId)
         {
+            // Add delay of 3 seconds
+            await Task.Delay(3000);
+
             if (string.IsNullOrEmpty(userId))
             {
                 return BadRequest(new ApiResponse
@@ -39,6 +39,8 @@ namespace EventManagement.Controllers
                     IsSuccess = false
                 });
             }
+
+
 
             var organization = await _organizationService.GetOrganizationByIdUser(userId);
 
@@ -59,7 +61,7 @@ namespace EventManagement.Controllers
             });
         }
 
-        [HttpPost("organization")]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -88,12 +90,12 @@ namespace EventManagement.Controllers
         }
 
 
-        [HttpPut("organization")]
+        [HttpPut("{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> Put([FromBody] OrganizationUpdateDto model)
+        public async Task<ActionResult<ApiResponse>> Put([FromRoute] string userId, [FromBody] OrganizationUpdateDto model)
         {
             if (model == null || !ModelState.IsValid)
             {
@@ -105,7 +107,7 @@ namespace EventManagement.Controllers
                 });
             }
 
-            var existingOrganization = await _organizationService.GetOrganizationById(model.IdOrganization);
+            var existingOrganization = await _organizationService.GetOrganizationByIdUser(userId);
             if (existingOrganization == null)
             {
                 return NotFound(new ApiResponse
