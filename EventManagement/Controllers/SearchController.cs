@@ -1,7 +1,5 @@
-﻿using EventManagement.Data.Repository.IRepository;
-using EventManagement.Models;
+﻿using EventManagement.Models;
 using EventManagement.Service;
-using EventManagement.Service.EventService;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 

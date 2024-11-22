@@ -2,6 +2,7 @@
 {
     public class EventDateSaveDto
     {
+        public string IdEventDate { get; set; }
         public string EventId { get; set; }
         public string DateTitle { get; set; }
         public DateTime ScheduledDate { get; set; } 

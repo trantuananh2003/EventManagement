@@ -10,7 +10,7 @@ namespace EventManagement.Data.FluentConfig
         {
             modelBuilder.HasKey(x => x.IdOrderDetail);
             modelBuilder.HasOne(x => x.OrderHeader).WithMany(u => u.OrderDetails).HasForeignKey(x=>x.OrderHeaderId);
-            modelBuilder.HasOne(x => x.Ticket).WithOne().HasForeignKey<OrderDetail>(x => x.TicketId);
+            modelBuilder.HasOne(x => x.Ticket).WithMany().HasForeignKey(x => x.TicketId);
             modelBuilder.Property(x => x.Quantity).IsRequired();
             modelBuilder.Property(x => x.Price).IsRequired();
             modelBuilder.Property(x => x.NameTicket).IsRequired();

@@ -13,7 +13,7 @@ namespace EventManagement.Data.Repository
             _db = db;
         }
 
-        public async Task<Agenda> UpdateAsync(Agenda entity)
+        public void Update(Agenda entity)
         {
             //Agenda agenda = await _db.Agendas.FindAsync(entity.IdAgenda);
             //if(agenda != null)
@@ -25,8 +25,6 @@ namespace EventManagement.Data.Repository
 
             //}
             _db.Agendas.Update(entity);
-            await SaveAsync();
-            return entity;
         }
     }
 }

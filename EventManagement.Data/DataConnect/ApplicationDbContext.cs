@@ -2,21 +2,17 @@
 using EventManagement.Data.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EventManagement.Data.DataConnect
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
         }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<ApplicationRole> ApplicationRoles { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<Event> Events { get; set; }
@@ -26,6 +22,8 @@ namespace EventManagement.Data.DataConnect
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<OrderHeader> OrderHeaders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<MemberOrganization> MemberOrganizations { get; set; }
+        public DbSet<PurchasedTicket> PurchasedTickets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +36,9 @@ namespace EventManagement.Data.DataConnect
             modelBuilder.ApplyConfiguration(new FluentTicket());
             modelBuilder.ApplyConfiguration(new FluentOrderHeader());
             modelBuilder.ApplyConfiguration(new FluentOrderDetail());
+            modelBuilder.ApplyConfiguration(new FlunetMemberOrganization());
+            modelBuilder.ApplyConfiguration(new FluentRole());
+            modelBuilder.ApplyConfiguration(new FluentPurchasedTicket());
         }
     }
 }

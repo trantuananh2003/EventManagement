@@ -1,14 +1,14 @@
 ﻿using Azure;
 using EventManagement.Models;
 using EventManagement.Models.ModelsDto.OrganizationDtos;
-using EventManagement.Service.OrganizationService;
+using EventManagement.Service;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
 namespace EventManagement.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api")]
     public class OrganizationController : Controller
     {
         private readonly IOrganizationService _organizationService;
@@ -21,11 +21,7 @@ namespace EventManagement.Controllers
         }
 
         // Get organization of a user
-        [HttpGet("{userId}", Name = "GetOrganizationByIdUser")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("[controller]/{userId}", Name = "GetOrganizationByIdUser")]
         public async Task<ActionResult<ApiResponse>> Get([FromRoute] string userId)
         {
             // Add delay of 3 seconds
@@ -61,10 +57,7 @@ namespace EventManagement.Controllers
             });
         }
 
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPost("[controller]")]
         public async Task<ActionResult<ApiResponse>> Post([FromBody] OrganizationCreateDto model)
         {
             if (!ModelState.IsValid)
@@ -89,12 +82,7 @@ namespace EventManagement.Controllers
             });
         }
 
-
-        [HttpPut("{userId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPut("[controller]/{userId}")]
         public async Task<ActionResult<ApiResponse>> Put([FromRoute] string userId, [FromBody] OrganizationUpdateDto model)
         {
             if (model == null || !ModelState.IsValid)
@@ -121,6 +109,28 @@ namespace EventManagement.Controllers
 
             return Ok(new ApiResponse
             {
+                StatusCode = HttpStatusCode.OK,
+                IsSuccess = true
+            });
+        }
+
+        [HttpGet("[controller]s")]
+        public async Task<ActionResult<ApiResponse>> GetAllByIdUser([FromQuery] string userId)
+        {
+            if(string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new ApiResponse
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    IsSuccess = false
+                });
+            }
+
+            var organizations = await _organizationService.GetJoinedOrganizationsByIdUser(userId);
+
+            return Ok(new ApiResponse
+            {
+                Result = organizations,
                 StatusCode = HttpStatusCode.OK,
                 IsSuccess = true
             });

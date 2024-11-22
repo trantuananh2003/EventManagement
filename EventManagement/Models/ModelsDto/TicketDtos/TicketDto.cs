@@ -1,5 +1,4 @@
-﻿using EventManagement.Data.Models;
-using EventManagement.Models.ModelsDto.EventDateDtos;
+﻿using EventManagement.Models.ModelsDto.EventDateDtos;
 
 namespace EventManagement.Models.ModelsDto.TicketDtos
 {

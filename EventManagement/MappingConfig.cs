@@ -8,6 +8,10 @@ using EventManagement.Models.ModelsDto.TicketDtos;
 using ModelApi =  EventManagement.Models.ModelQueries;
 using ModelData = EventManagement.Data.Queries.ModelDto;
 using EventManagement.Models.ModelsDto.OrderHeaderDtos;
+using EventManagement.Models.ModelsDto.OrderDetailDtos;
+using EventManagement.Data.Queries.ModelDto;
+using static EventManagement.Models.ModelsDto.OrganizationDtos.MemberOrganizationDto;
+using EventManagement.Models.ModelsDto.PurchasedDtos;
 
 namespace EventManagement
 {
@@ -44,12 +48,24 @@ namespace EventManagement
 
             CreateMap<Ticket, TicketUpdateDto>().ReverseMap();
             CreateMap<OrderHeader, OrderHeaderCreateDto>().ReverseMap();
+            CreateMap<OrderDetail, OrderDetailCreateDto>().ReverseMap();
 
+            CreateMap<OrderHeader, OrderHeaderDto>().ForMember(dest => dest.OrderDate, opt =>
+                    opt.MapFrom(src => src.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")));
+            CreateMap<OrderDetail, OrderDetailDto>();
+            CreateMap<DataOverviewOrderDto, OverviewOrderDto>().ForMember(dest => dest.OrderDate, opt =>
+                    opt.MapFrom(src => src.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")));
+
+            CreateMap<MemberOrganization, MemberOrganizationDto>().ReverseMap();
+            CreateMap<ApplicationUser, UserOrganizationDto>().ReverseMap();
             //Query
             CreateMap<ModelApi.SearchItemDto.HomeEventDto, ModelData.HomeEventDto>().ReverseMap();
             CreateMap<ModelApi.EventDetailViewDto, ModelData.EventDetailViewDto>().ReverseMap();
             CreateMap< ModelData.TicketTimeViewDto, ModelApi.TicketTimeViewDto>().ForMember(dest => dest.ScheduledDate, opt =>
                     opt.MapFrom(src => src.ScheduledDate.ToString("yyyy-MM-dd")));
+
+            CreateMap<PurchasedTicketDto, PurchasedTicket>().ReverseMap();
+            CreateMap<PurchasedTicketUpdateDto, PurchasedTicket>().ReverseMap();
 
         }
     }

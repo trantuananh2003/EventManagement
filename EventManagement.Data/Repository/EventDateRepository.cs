@@ -18,18 +18,10 @@ namespace EventManagement.Data.Repository
             _db = db;
         }
 
-        public Task<EventDate> UpdateAsync(EventDate entity)
+        public void Update(EventDate entity)
         {
-            throw new NotImplementedException();
+            _db.Update(entity);
         }
 
-        public async Task<bool> SaveAllList(List<EventDate> listItem,string id)
-        {
-            var list = _db.EventDates.Where(x => x.EventId == id).ToList();
-            _db.EventDates.RemoveRange(list);
-            _db.EventDates.AddRange(listItem);
-            await _db.SaveChangesAsync();
-            return true;
-        }
     }
 }

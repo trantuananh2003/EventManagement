@@ -39,6 +39,14 @@ namespace EventManagement.Middleware
                     ErrorMessage = "Hello, From Custom Exception Handler",
                 }));
             }
+            else if (ex is UnauthorizedAccessException unauthorizedAccessException)
+            {
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                {
+                    statusCode = 401,
+                    ErrorMessage = "Hello, From Custom Exception Handler",
+                }));
+            }
             else if (ex is SqlException sqlException)
             {
                 await context.Response.WriteAsync(JsonConvert.SerializeObject(new

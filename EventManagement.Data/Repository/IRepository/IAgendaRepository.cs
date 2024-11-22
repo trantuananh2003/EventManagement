@@ -9,6 +9,6 @@ namespace EventManagement.Data.Repository.IRepository
 {
     public interface IAgendaRepository : IRepository<Agenda>
     {
-        Task<Agenda> UpdateAsync(Agenda entity);
+        void Update(Agenda entity);
     }
 }

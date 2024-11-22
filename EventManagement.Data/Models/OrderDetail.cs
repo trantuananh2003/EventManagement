@@ -8,9 +8,9 @@ namespace EventManagement.Data.Models
 {
     public class OrderDetail
     {
-        public string IdOrderDetail { get; set; }
+        public string IdOrderDetail { get; set; } //Backend
 
-        public string OrderHeaderId { get; set; }
+        public string OrderHeaderId { get; set; } //Backend
         public OrderHeader OrderHeader { get; set; }
 
         public string TicketId { get; set; }
@@ -19,5 +19,6 @@ namespace EventManagement.Data.Models
         public int Quantity { get; set; }
         public string NameTicket { get; set; }
         public int Price { get; set; }
+
     }
 }

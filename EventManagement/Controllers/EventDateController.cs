@@ -44,16 +44,11 @@ namespace EventManagement.Controllers
             return Ok(_apiResponse);
         }
 
-        [HttpPost("bulk")]
-        public async Task<ActionResult<ApiResponse>> Post(List<EventDateSaveDto> listEventDto,[FromQuery] string idEvent)
+        [HttpPost]
+        public async Task<ActionResult<ApiResponse>> Post([FromBody]EventDateCombineSaveDto eventDateCombine,[FromQuery] string idEvent)
         {
-            var list = await _eventDateService.SaveAllEventDate(listEventDto, idEvent);
-            if(list.Count == 0)
-            {
-                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
-                _apiResponse.IsSuccess = false;
-                return BadRequest(_apiResponse);
-            }
+            await _eventDateService.SaveAllEventDate(eventDateCombine.ListEventDateDto, eventDateCombine.ListEventDateDelete, idEvent);
+
             _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);

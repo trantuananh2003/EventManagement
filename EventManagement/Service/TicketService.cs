@@ -31,6 +31,7 @@ namespace EventManagement.Service
             var ticketEntity = _mapper.Map<Ticket>(modelRequest);
             ticketEntity.IdTicket = Guid.NewGuid().ToString();
             await _dbTicket.CreateAsync(ticketEntity);
+            await _dbTicket.SaveAsync();
             return _mapper.Map<TicketDto>(ticketEntity);
         }
 
@@ -41,7 +42,7 @@ namespace EventManagement.Service
                 return null;
             }
 
-            var listTicketEntity = await _dbTicket.GetAllAsync(u => u.EventId == idEvent,includeProperties: "EventDate");
+            var listTicketEntity = await _dbTicket.GetAllAsync(u => u.EventId == idEvent, includeProperties: "EventDate");
             return _mapper.Map<List<TicketDto>>(listTicketEntity);
         }
 
@@ -65,13 +66,15 @@ namespace EventManagement.Service
             }
             var modelUpdate = _mapper.Map<Ticket>(itemUpdate);
             await _dbTicket.UpdateAsync(modelUpdate);
+            await _dbTicket.SaveAsync();
         }
 
         public async Task DeleteTicket(string idTicket)
         {
             var ticketEntity = await _dbTicket.GetAsync(u => u.IdTicket == idTicket);
-            await _dbTicket.RemoveAsync(ticketEntity);
+            _dbTicket.Remove(ticketEntity);
+            await _dbTicket.SaveAsync();
         }
-        
+
     }
 }

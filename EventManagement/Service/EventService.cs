@@ -3,13 +3,15 @@ using EventManagement.Common;
 using EventManagement.Data.Models;
 using EventManagement.Data.Repository.IRepository;
 using EventManagement.Models.ModelsDto.EventDtos;
+using Microsoft.Extensions.Logging;
 
-namespace EventManagement.Service.EventService
+namespace EventManagement.Service
 {
     public interface IEventService
     {
         Task<EventDto> GetEvent(string idEvent);
-        Task<List<EventDto>> GetAllEvent(string idOrganization);
+        Task<(List<EventDto>, int)> GetAllEvent(string idOrganization, string searchString, string statusEvent
+            , int pageSize = 3, int pageNumber = 1);
         Task<EventDto> CreateEvent(EventCreateDto modelRequest);
         Task UpdateEvent(EventUpdateDto modelRequest);
     }
@@ -55,17 +57,24 @@ namespace EventManagement.Service.EventService
         }
 
         //Lấy toàn bộ thẻ 
-        public async Task<List<EventDto>> GetAllEvent(string idOrganization)
+        public async Task<(List<EventDto>, int)> GetAllEvent(string idOrganization, string searchString, string statusEvent
+            , int pageSize = 0, int pageNumber = 1)
         {
-            if (string.IsNullOrEmpty(idOrganization))
-            {
-                return null;
-            }
+            IEnumerable<Event> eventList;
+            eventList = await _dbEvent.GetAllAsync(
+                u => u.OrganizationId == idOrganization
+                     && (string.IsNullOrEmpty(statusEvent) || u.Status == statusEvent)
+                     && (string.IsNullOrEmpty(searchString) || u.NameEvent.ToLower().Contains(searchString.ToLower())),
+                pageSize: pageSize,
+                pageNumber: pageNumber);
 
-            IEnumerable<Event> events = await _dbEvent.GetAllAsync(e => e.OrganizationId == idOrganization);
-            List<EventDto> listEventDto = _mapper.Map<List<EventDto>>(events);
 
-            return listEventDto;
+            int totalRow = await _dbEvent.CountAllAsync(u => u.OrganizationId == idOrganization
+                     && (string.IsNullOrEmpty(statusEvent) || u.Status == statusEvent)
+                     && (string.IsNullOrEmpty(searchString) || u.NameEvent.ToLower().Contains(searchString.ToLower())));
+
+            List<EventDto> listEventDto = _mapper.Map<List<EventDto>>(eventList);
+            return (listEventDto, totalRow);
         }
 
         // Tạo mới event
@@ -78,13 +87,13 @@ namespace EventManagement.Service.EventService
             eventEntity.UrlImage = await _blobService.UploadBlob(fileName, SD.SD_Storage_Containter, modelRequest.File);
 
             await _dbEvent.CreateAsync(eventEntity); // Lưu event mới vào database
+            await _dbEvent.SaveAsync(); // Lưu thay đổi vào database
             return _mapper.Map<EventDto>(eventEntity);
         }
 
         // Cập nhật thông tin event
         public async Task UpdateEvent(EventUpdateDto modelRequest)
         {
-
             //CHua xu ly viec mapping qua 
             var eventEntity = await _dbEvent.GetAsync(u => u.IdEvent == modelRequest.IdEvent);
             _mapper.Map(modelRequest, eventEntity);
@@ -95,7 +104,8 @@ namespace EventManagement.Service.EventService
                 eventEntity.UrlImage = await _blobService.UploadBlob(fileName, SD.SD_Storage_Containter, modelRequest.File);
             }
 
-            await _dbEvent.UpdateAsync(eventEntity);
+            _dbEvent.Update(eventEntity);
+            await _dbEvent.SaveAsync();
         }
 
     }

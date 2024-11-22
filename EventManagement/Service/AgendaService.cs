@@ -47,17 +47,20 @@ namespace EventManagement.Service
             var agendaEntity = _mapper.Map<Agenda>(modelRequest);
             agendaEntity.IdAgenda = Guid.NewGuid().ToString();
             await _dbAgenda.CreateAsync(agendaEntity);
+            await _dbAgenda.SaveAsync();
             return _mapper.Map<AgendaDto>(agendaEntity);
         }
 
         public async Task UpdateAgenda(AgendaUpdateDto modelRequest)
         {
             Agenda agenda = await _dbAgenda.GetAsync(u => u.IdAgenda == modelRequest.IdAgenda);
+
             if (agenda != null)
             {
                 _mapper.Map(modelRequest, agenda);
             }
-            await _dbAgenda.UpdateAsync(agenda);
+            _dbAgenda.Update(agenda);
+            await _dbAgenda.SaveAsync();
         }
     }
 }

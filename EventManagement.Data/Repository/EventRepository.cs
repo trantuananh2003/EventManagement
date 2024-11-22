@@ -18,11 +18,9 @@ namespace EventManagement.Data.Repository
             _db = db;
         }
 
-        public async Task<Event> UpdateAsync(Event entity)
+        public void Update(Event entity)
         {
             var model = _db.Events.Update(entity);
-            await _db.SaveChangesAsync();
-            return entity;
         }
     }
 }

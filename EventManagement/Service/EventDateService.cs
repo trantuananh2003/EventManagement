@@ -2,8 +2,6 @@
 using EventManagement.Data.Models;
 using EventManagement.Data.Repository.IRepository;
 using EventManagement.Models.ModelsDto.EventDateDtos;
-using EventManagement.Service.EventService;
-using Microsoft.IdentityModel.Tokens;
 
 namespace EventManagement.Service
 {
@@ -11,7 +9,7 @@ namespace EventManagement.Service
     {
         public Task<List<EventDateDto>> GetAllEventDate(string idEvent);
 
-        public Task<List<EventDateDto>> SaveAllEventDate(List<EventDateSaveDto> listEventDate, string idEvent);
+        public Task SaveAllEventDate(List<EventDateSaveDto> listEventDateSave, List<EventDateSaveDto> listEventDateDelete, string idEvent);
     }
 
     public class EventDateService : IEventDateService
@@ -27,7 +25,7 @@ namespace EventManagement.Service
 
         public async Task<List<EventDateDto>> GetAllEventDate(string idEvent)
         {
-            if(idEvent == null)
+            if (idEvent == null)
             {
                 return null;
             }
@@ -37,22 +35,40 @@ namespace EventManagement.Service
             return listEventDate;
         }
 
-        public async Task<List<EventDateDto>> SaveAllEventDate(List<EventDateSaveDto> listEventDate, string idEvent)
+        public async Task SaveAllEventDate(List<EventDateSaveDto> listEventDateSave, List<EventDateSaveDto> listEventDateDelete, string idEvent)
         {
-            if (listEventDate.IsNullOrEmpty() && listEventDate.Count == 0)
+
+            var listEventDateEntity = _mapper.Map<List<EventDate>>(listEventDateSave);
+            var listEventDateDeleteEntity = _mapper.Map<List<EventDate>>(listEventDateDelete);
+            using (var transaction = _dbEventDate.BeginTransaction())
             {
-                return null;
+                try
+                {
+                    _dbEventDate.RemoveRange(listEventDateDeleteEntity);
+
+                    foreach (var item in listEventDateEntity)
+                    {
+                        if (string.IsNullOrEmpty(item.IdEventDate))
+                        {
+                            item.IdEventDate = Guid.NewGuid().ToString();
+                            await _dbEventDate.CreateAsync(item);
+                        }
+                        else
+                        {
+                            _dbEventDate.Update(item);
+                        }
+                    }
+
+                    await _dbEventDate.SaveAsync();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new Exception("An error occurred while saving the entity.", ex);
+                }
             }
 
-            var listEntity = _mapper.Map<List<EventDate>>(listEventDate);
-            listEntity.ForEach(u => u.IdEventDate = Guid.NewGuid().ToString());
-            var check = await _dbEventDate.SaveAllList(listEntity, idEvent);
-            if(!check)
-            {
-                return null;
-            }
-
-            return _mapper.Map<List<EventDateDto>>(listEntity);
         }
     }
 }

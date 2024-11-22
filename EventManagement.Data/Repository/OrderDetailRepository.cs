@@ -13,11 +13,9 @@ namespace EventManagement.Data.Repository
             _db = db;
         }
 
-        public async Task<OrderDetail> UpdateAsync(OrderDetail entity)
+        public void Update(OrderDetail entity)
         {
             _db.OrderDetails.Update(entity);
-            await _db.SaveChangesAsync();
-            return entity;
         }
     }
 }

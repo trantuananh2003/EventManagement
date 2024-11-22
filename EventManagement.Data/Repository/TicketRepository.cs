@@ -22,7 +22,6 @@ namespace EventManagement.Data.Repository
         public async Task<Ticket> UpdateAsync(Ticket entity)
         {
             _db.Tickets.Update(entity);
-            await _db.SaveChangesAsync();
             return entity;
         }
     }

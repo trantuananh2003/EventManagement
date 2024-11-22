@@ -7,15 +7,19 @@ using EventManagement.Data.Repository;
 using EventManagement.Data.Repository.IRepository;
 using EventManagement.Filter;
 using EventManagement.Middleware;
+using EventManagement.Middleware.Identity;
+using EventManagement.Models;
 using EventManagement.Service;
-using EventManagement.Service.EventService;
-using EventManagement.Service.OrganizationService;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Net.Security;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +32,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 //AddConfig AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 //Service Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>().AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders()
+    .AddUserManager<ApplicationUserManager>()
+    .AddRoleValidator<RoleValidationCustom>();
+
+var defaultRoleValidator = builder.Services.FirstOrDefault(descriptor =>
+    descriptor.ImplementationType == typeof(RoleValidator<ApplicationRole>));
+if (defaultRoleValidator != null)
+{
+    builder.Services.Remove(defaultRoleValidator);
+}
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
+{
+    opt.TokenLifespan = TimeSpan.FromHours(2);
+});
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.Password.RequireUppercase = false;
@@ -43,32 +62,25 @@ builder.Services.AddControllers(option => option.Filters.Add<CustomExceptionFilt
 );
 //Service Bussiness
 builder.Services.AddSingleton(u => new BlobServiceClient(builder.Configuration.GetConnectionString("StorageAccount")));
-builder.Services.AddSingleton<IBlobService, BlobService>(); builder.Services.AddScoped<IOrganizationService, OrganizationService>();
-builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
-builder.Services.AddScoped<IEventService, EventService>();
-builder.Services.AddScoped<IEventRepository, EventRepository>();
-builder.Services.AddScoped<IAgendaService, AgendaService>();
-builder.Services.AddScoped<IAgendaRepository, AgendaRepository>();
-builder.Services.AddScoped<IEventDateRepository, EventDateRepository>();
-builder.Services.AddScoped<IEventDateService, EventDateService>();
-builder.Services.AddScoped<ITicketRepository, TicketRepository>();
-builder.Services.AddScoped<ITicketService, TicketService>();
-builder.Services.AddScoped<ISearchService, SearchService>();
-builder.Services.AddScoped<ISearchQuery, SearchQuery>();
-builder.Services.AddScoped<IEventDetailViewQuery, EventDetailViewQuery>();
-builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
-builder.Services.AddScoped<IOrderHeaderRepository, OrderHeaderRepository>();
-builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.AddServiceSetUp();
+builder.Services.AddServiceSetUpReposiotry();
 
 //Service controller
 builder.Services.AddControllers();
+//Mail 
+builder.Services.AddOptions();
+var mailSettings = builder.Configuration.GetSection("MailSettings");
+builder.Services.Configure<MailSettings>(mailSettings);
+builder.Services.AddTransient<SendMailService>();
 //Configure JWT
 var key = builder.Configuration.GetValue<string>("ApiSetting:Secret");
 builder.Services.AddAuthentication(u =>
 {
     u.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     u.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(u =>
+})
+.AddJwtBearer(u =>
 {
     u.RequireHttpsMetadata = false;
     u.SaveToken = true;
@@ -76,12 +88,14 @@ builder.Services.AddAuthentication(u =>
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
+        ValidateAudience = false,
         ValidateIssuer = false,
-        ValidateAudience = false
     };
 });
-
+builder.Services.AddSetupAuthorization();
+builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
+builder.Services.AddCors();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -118,13 +132,8 @@ builder.Services.AddSwaggerGen(options => {
 var app = builder.Build();
 
 // Add CORS policy
-app.UseCors(opt =>
-{
-    opt.AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowAnyOrigin(); // Allow any origin to bypass CORS policy
-});
 
+app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithExposedHeaders("*"));
 // Rest of the code...
 
 // Configure the HTTP request pipeline.

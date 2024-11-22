@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace EventManagement.Common
 {
+    //Static Define
     public static class SD
     {
         public const string Role_Customer = "customer";
@@ -20,5 +21,6 @@ namespace EventManagement.Common
 
         public const string SD_Storage_Containter = "eventmanagement";
 
+        public const string SD_URL_LINK_RESETPASSWORD = "http://localhost:3000/reset-password";
     }
 }

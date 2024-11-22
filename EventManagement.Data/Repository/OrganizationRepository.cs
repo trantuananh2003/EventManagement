@@ -22,7 +22,6 @@ namespace EventManagement.Data.Repository
                 existingEntity.City = entity.City;
                 existingEntity.Country = entity.Country;
                 _db.Organizations.Update(existingEntity);
-                await SaveAsync();
             }
             return existingEntity;
         }

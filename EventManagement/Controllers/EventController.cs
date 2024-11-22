@@ -1,13 +1,15 @@
 ﻿using EventManagement.Models;
 using EventManagement.Models.ModelsDto.EventDtos;
-using EventManagement.Service.EventService;
+using EventManagement.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Text.Json;
 
 namespace EventManagement.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/")]
     public class EventController : Controller
     {
         private readonly IEventService _eventService;
@@ -19,12 +21,7 @@ namespace EventManagement.Controllers
             _apiResponse = new ApiResponse();
         }
 
-        // Lấy thông tin event dựa trên idOrganization
-        [HttpGet("{idEvent}", Name = "GetEvent")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("[controller]/{idEvent}", Name = "GetEvent")]
         public async Task<ActionResult<ApiResponse>> Get(string idEvent)
         {
             if (string.IsNullOrEmpty(idEvent))
@@ -47,10 +44,12 @@ namespace EventManagement.Controllers
             _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);
-        }   
+        }
 
-        [HttpGet("organization/{idOrganization}" , Name = "GetAll")]
-        public async Task<ActionResult<ApiResponse>> GetAll([FromRoute]string idOrganization)
+        // Lấy thông tin event dựa trên idOrganization
+        [HttpGet("[controller]s", Name = "GetAll")]
+        public async Task<ActionResult<ApiResponse>> GetAll([FromQuery] string idOrganization, string searchString, string statusEvent,
+            int pageSize = 0, int pageNumber = 1)
         {
             if(string.IsNullOrEmpty(idOrganization))
             {
@@ -59,7 +58,7 @@ namespace EventManagement.Controllers
                 return BadRequest(_apiResponse);
             }
 
-            List<EventDto> listEventDto = await _eventService.GetAllEvent(idOrganization);
+            var (listEventDto, totalRow) = await _eventService.GetAllEvent(idOrganization, searchString, statusEvent,pageSize, pageNumber);
 
             if (listEventDto == null)
             {
@@ -68,6 +67,15 @@ namespace EventManagement.Controllers
                 return NotFound(_apiResponse);
             }
 
+            Pagination pagination = new Pagination()
+            {
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRow
+            };
+
+            Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pagination));
+
             _apiResponse.Result = listEventDto;
             _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.IsSuccess = true;
@@ -75,10 +83,11 @@ namespace EventManagement.Controllers
         }
 
         // Tạo mới event
-        [HttpPost()]
+        [HttpPost("[controller]")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize(Policy = "AddEventPolicy")]
         public async Task<ActionResult<ApiResponse>> Post([FromForm] EventCreateDto model)
         {
             if (!ModelState.IsValid)
@@ -100,7 +109,7 @@ namespace EventManagement.Controllers
         }
 
         // Cập nhật thông tin event
-        [HttpPut("{idEvent}")]
+        [HttpPut("[controller]/{idEvent}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
