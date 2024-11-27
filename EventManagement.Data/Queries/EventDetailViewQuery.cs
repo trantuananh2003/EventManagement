@@ -44,6 +44,8 @@ namespace EventManagement.Data.Queries
                     UrlImage = eventGroup.Event.UrlImage,
                     Location = eventGroup.Event.Location,
                     Description = eventGroup.Event.Description,
+                    Status = eventGroup.Event.Status,
+                    Privacy = eventGroup.Event.Privacy,
                     NameOrganization = _db.Organizations.Where(o => o.IdOrganization == eventGroup.Event.OrganizationId)
                                         .Select(o => o.NameOrganization)
                                         .FirstOrDefault(),

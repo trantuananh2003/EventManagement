@@ -1,4 +1,5 @@
-﻿using EventManagement.Models;
+﻿using EventManagement.Common;
+using EventManagement.Models;
 using EventManagement.Models.ModelsDto.EventDtos;
 using EventManagement.Service;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +22,7 @@ namespace EventManagement.Controllers
             _apiResponse = new ApiResponse();
         }
 
-        [HttpGet("[controller]/{idEvent}", Name = "GetEvent")]
+        [HttpGet("[controller]/{idEvent}", Name = "GetEventById")]
         public async Task<ActionResult<ApiResponse>> Get(string idEvent)
         {
             if (string.IsNullOrEmpty(idEvent))
@@ -31,7 +32,7 @@ namespace EventManagement.Controllers
                 return BadRequest(_apiResponse);
             }
 
-            var eventResult = await _eventService.GetEvent(idEvent);
+            var eventResult = await _eventService.GetEventById(idEvent);
 
             if (eventResult == null)
             {
@@ -104,16 +105,13 @@ namespace EventManagement.Controllers
             var eventDto = await _eventService.CreateEvent(model);
             _apiResponse.StatusCode = HttpStatusCode.Created;
             _apiResponse.IsSuccess = true;
-            _apiResponse.Result = eventDto;
-            return CreatedAtRoute("GetEvent", routeValues: new { idEvent = eventDto.IdEvent }, value: _apiResponse);
+            _apiResponse.Result = new {eventId = eventDto.IdEvent };
+            //return CreatedAtRoute("GetEventById", routeValues: new { idEvent = eventDto.IdEvent }, value: _apiResponse);
+            return Ok(_apiResponse);
         }
 
         // Cập nhật thông tin event
         [HttpPut("[controller]/{idEvent}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse>> Put([FromForm] EventUpdateDto model, [FromRoute] string idEvent)
         {
             model.IdEvent = idEvent;
@@ -126,7 +124,7 @@ namespace EventManagement.Controllers
             }
 
             // Check Event exists
-            var existingEvent = await _eventService.GetEvent(model.IdEvent);
+            var existingEvent = await _eventService.GetEventById(model.IdEvent);
             if (existingEvent == null)
             {
                 _apiResponse.StatusCode = HttpStatusCode.NotFound;
@@ -135,6 +133,20 @@ namespace EventManagement.Controllers
             }
 
             await _eventService.UpdateEvent(model);
+            _apiResponse.StatusCode = HttpStatusCode.OK;
+            _apiResponse.IsSuccess = true;
+            return Ok(_apiResponse);
+        }
+
+        [HttpPut("[controller]/{idEvent}/privacy")]
+        public async Task<ActionResult<ApiResponse>> SetPrivacyEventByID([FromRoute] string idEvent,
+            [FromBody] string privacy)
+        {
+            if(Enum.IsDefined(typeof(Privacy), privacy))
+            {
+                await _eventService.UpdatePrivacy(idEvent, privacy);
+            }
+
             _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);

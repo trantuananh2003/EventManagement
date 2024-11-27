@@ -1,5 +1,7 @@
 ﻿using EventManagement.Data.FluentConfig;
+using EventManagement.Data.FluentConfig.FluentSupportChatRoom;
 using EventManagement.Data.Models;
+using EventManagement.Data.Models.ChatRoom;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +26,8 @@ namespace EventManagement.Data.DataConnect
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<MemberOrganization> MemberOrganizations { get; set; }
         public DbSet<PurchasedTicket> PurchasedTickets { get; set; }
+        public DbSet<SupportChatRoom> SupportChatRooms { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,6 +43,8 @@ namespace EventManagement.Data.DataConnect
             modelBuilder.ApplyConfiguration(new FlunetMemberOrganization());
             modelBuilder.ApplyConfiguration(new FluentRole());
             modelBuilder.ApplyConfiguration(new FluentPurchasedTicket());
+            modelBuilder.ApplyConfiguration(new FluentSupportChatRoom());
+            modelBuilder.ApplyConfiguration(new FluentMessage());
         }
     }
 }

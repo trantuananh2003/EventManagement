@@ -9,7 +9,7 @@ using System.Text.Json;
 namespace EventManagement.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/")]
     public class PurchasedTicketController : Controller
     {
         private readonly IPurchasedTicketService _purchasedTicketService;
@@ -18,21 +18,21 @@ namespace EventManagement.Controllers
         public PurchasedTicketController(IPurchasedTicketService purchasedTicketService)
         {
             _purchasedTicketService = purchasedTicketService;
-            _apiResponse = new ApiResponse();
+            _apiResponse = new ApiResponse();   
         }
 
-        [HttpGet]
-        public async Task<ActionResult<ApiResponse>> GetAllPurchasedTicket(string idOrderHeader, string searchString, string status,
+        [HttpGet("[controller]")]
+        public async Task<ActionResult<ApiResponse>> GetAllPurchasedTicket(string orderHeaderId, string searchString, string status,
             int pageSize = 0, int pageNumber = 1)
         {
-            if (string.IsNullOrEmpty(idOrderHeader))
+            if (string.IsNullOrEmpty(orderHeaderId))
             {
                 _apiResponse.StatusCode = HttpStatusCode.BadRequest;
                 _apiResponse.IsSuccess = false;
                 return BadRequest(_apiResponse);
             }
 
-            var (listPurchasedTicketDto, totalRow) = await _purchasedTicketService.GetAllPurchasedTicket(idOrderHeader, searchString, status, pageSize, pageNumber);
+            var (listPurchasedTicketDto, totalRow) = await _purchasedTicketService.GetAllPurchasedTicket(orderHeaderId, searchString, status, pageSize, pageNumber);
 
             if (listPurchasedTicketDto == null)
             {
@@ -56,7 +56,7 @@ namespace EventManagement.Controllers
             return Ok(_apiResponse);
         }
 
-        [HttpGet("{idPurchasedTicket}")]
+        [HttpGet("[controller]/{idPurchasedTicket}")]
         public async Task<ActionResult<ApiResponse>> GetPurchasedTicketById(string idPurchasedTicket)
         {
             var purchasedTicketDto = await _purchasedTicketService.GetPurchasedTicketById(idPurchasedTicket);
@@ -74,8 +74,8 @@ namespace EventManagement.Controllers
             return Ok(_apiResponse);
         }
 
-        [HttpPut("{idPurchasedTicket}")]
-        public async Task<ActionResult<ApiResponse>> UpdatePurchasedTicket(string idPurchasedTicket, [FromBody] PurchasedTicketUpdateDto model)
+        [HttpPut("[controller]/{idPurchasedTicket}")]
+        public async Task<ActionResult<ApiResponse>> UpdatePurchasedTicket([FromRoute]string idPurchasedTicket, [FromBody] PurchasedTicketUpdateDto model)
         {
             if (string.IsNullOrEmpty(idPurchasedTicket))
             {

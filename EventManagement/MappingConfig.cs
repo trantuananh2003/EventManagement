@@ -10,8 +10,9 @@ using ModelData = EventManagement.Data.Queries.ModelDto;
 using EventManagement.Models.ModelsDto.OrderHeaderDtos;
 using EventManagement.Models.ModelsDto.OrderDetailDtos;
 using EventManagement.Data.Queries.ModelDto;
-using static EventManagement.Models.ModelsDto.OrganizationDtos.MemberOrganizationDto;
 using EventManagement.Models.ModelsDto.PurchasedDtos;
+using EventManagement.Models.SupportChatRoomDtos;
+using EventManagement.Data.Models.ChatRoom;
 
 namespace EventManagement
 {
@@ -53,11 +54,14 @@ namespace EventManagement
             CreateMap<OrderHeader, OrderHeaderDto>().ForMember(dest => dest.OrderDate, opt =>
                     opt.MapFrom(src => src.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")));
             CreateMap<OrderDetail, OrderDetailDto>();
-            CreateMap<DataOverviewOrderDto, OverviewOrderDto>().ForMember(dest => dest.OrderDate, opt =>
+            CreateMap<UserOrderOverviewDto, OverviewOrderDto>().ForMember(dest => dest.OrderDate, opt =>
                     opt.MapFrom(src => src.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")));
 
             CreateMap<MemberOrganization, MemberOrganizationDto>().ReverseMap();
             CreateMap<ApplicationUser, UserOrganizationDto>().ReverseMap();
+            CreateMap<PurchasedTicket, PurchasedTicketDto>().ReverseMap();
+            CreateMap<SupportChatRoom, SupportChatRoomDto>().ReverseMap();
+
             //Query
             CreateMap<ModelApi.SearchItemDto.HomeEventDto, ModelData.HomeEventDto>().ReverseMap();
             CreateMap<ModelApi.EventDetailViewDto, ModelData.EventDetailViewDto>().ReverseMap();

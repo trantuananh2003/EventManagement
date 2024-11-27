@@ -1,9 +1,12 @@
 ﻿
 using EventManagement.Data.DataConnect;
 using EventManagement.Data.Models;
+using EventManagement.Data.Models.ModelDto;
 using EventManagement.Data.Queries.ModelDto;
 using EventManagement.Data.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
+using System.Collections;
+using System.Threading.Tasks.Dataflow;
 
 namespace EventManagement.Data.Repository
 {
@@ -21,7 +24,7 @@ namespace EventManagement.Data.Repository
             _db.OrderHeaders.Update(entity);
         }
 
-        public IQueryable<DataOverviewOrderDto> GetListOverviewOrderDtos(string IdUser)
+        public IQueryable<UserOrderOverviewDto> GetUserOrders(string IdUser)
         {
             var modelQuery = _db.OrderHeaders
                 .Where(oh => oh.UserId == IdUser) // Lọc theo UserId
@@ -50,7 +53,7 @@ namespace EventManagement.Data.Repository
                     od.Quantity,
                 })
                 .GroupBy(x => new { x.IdOrderHeader, x.NameEvent, x.UrlImage, x.PriceTotal })
-                .Select(group => new DataOverviewOrderDto
+                .Select(group => new UserOrderOverviewDto
                 {
                     IdOrderHeader = group.Key.IdOrderHeader,
                     NameEvent = group.Key.NameEvent,
@@ -63,5 +66,30 @@ namespace EventManagement.Data.Repository
             return modelQuery;
         }
 
+        public async Task<(IEnumerable<AdminOrderOverviewDto>, int)> GetAdminOrders(string IdOrganization, string searchString,
+            int pageSize = 0, int pageNumber = 1)
+        {
+            var modelQuery = from e in _db.Events
+                             where e.OrganizationId == IdOrganization
+                             join oh in _db.OrderHeaders on e.IdEvent equals oh.EventId
+                             select new AdminOrderOverviewDto
+                             {
+                                 IdOrderHeader = oh.IdOrderHeader,
+                                 NameEvent = e.NameEvent,
+                                 NameBuyer = oh.User.UserName,
+                                 InvoiceDate = oh.OrderDate,
+                                 Status = oh.Status,
+                                 TotalPrice = oh.PriceTotal
+                             };
+            IEnumerable<AdminOrderOverviewDto> result = null;
+
+            if (pageSize > 0)
+                result = await modelQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            else
+                result = await modelQuery.ToListAsync();
+
+            var total = await modelQuery.CountAsync();
+            return (result, total);
+        }
     }
 }

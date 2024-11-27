@@ -19,6 +19,6 @@ namespace EventManagement.Data.Models
         public int Quantity { get; set; }
         public string NameTicket { get; set; }
         public int Price { get; set; }
-
+        public List<PurchasedTicket> PurchasedTickets { get; set; }
     }
 }

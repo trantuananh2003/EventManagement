@@ -9,11 +9,12 @@ namespace EventManagement.Service
 {
     public interface IEventService
     {
-        Task<EventDto> GetEvent(string idEvent);
+        Task<EventDto> GetEventById(string idEvent);
         Task<(List<EventDto>, int)> GetAllEvent(string idOrganization, string searchString, string statusEvent
             , int pageSize = 3, int pageNumber = 1);
         Task<EventDto> CreateEvent(EventCreateDto modelRequest);
         Task UpdateEvent(EventUpdateDto modelRequest);
+        Task UpdatePrivacy(string idEvent, string privacy);
     }
 
     public class EventService : IEventService
@@ -30,7 +31,7 @@ namespace EventManagement.Service
         }
 
         // Lấy thông tin event dựa trên idOrganization
-        public async Task<EventDto> GetEvent(string idEvent)
+        public async Task<EventDto> GetEventById(string idEvent)
         {
             try
             {
@@ -84,6 +85,7 @@ namespace EventManagement.Service
 
             var eventEntity = _mapper.Map<Event>(modelRequest);
             eventEntity.IdEvent = Guid.NewGuid().ToString(); // Tạo IdEvent mới
+            eventEntity.Privacy = Privacy.Private.ToString();
             eventEntity.UrlImage = await _blobService.UploadBlob(fileName, SD.SD_Storage_Containter, modelRequest.File);
 
             await _dbEvent.CreateAsync(eventEntity); // Lưu event mới vào database
@@ -108,5 +110,12 @@ namespace EventManagement.Service
             await _dbEvent.SaveAsync();
         }
 
+        public async Task UpdatePrivacy(string idEvent, string privacy)
+        {
+            var entity = await _dbEvent.GetAsync(x => x.IdEvent == idEvent);
+            entity.Privacy = privacy.ToString();
+            _dbEvent.Update(entity);
+            await _dbEvent.SaveAsync();
+        }
     }
 }

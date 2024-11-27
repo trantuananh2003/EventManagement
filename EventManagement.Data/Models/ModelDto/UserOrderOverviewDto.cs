@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EventManagement.Data.Queries.ModelDto
 {
-    public class DataOverviewOrderDto
+    public class UserOrderOverviewDto
     {
         public string IdOrderHeader { get; set; }
         public string UrlImage { get; set; }

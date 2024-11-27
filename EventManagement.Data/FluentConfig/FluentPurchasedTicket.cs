@@ -14,8 +14,8 @@ namespace EventManagement.Data.FluentConfig
         public void Configure(EntityTypeBuilder<PurchasedTicket> modelBuilder)
         {
             modelBuilder.HasKey(x => x.IdPurchasedTicket);
-            modelBuilder.HasOne(x => x.OrderDetail).WithMany().HasForeignKey(x => x.OrderDetailId).IsRequired();
             modelBuilder.HasOne(x => x.OrderHeader).WithMany().HasForeignKey(x => x.OrderHeaderId).IsRequired();
+            modelBuilder.HasOne(x => x.OrderDetail).WithMany(x => x.PurchasedTickets).HasForeignKey(x => x.OrderDetailId).IsRequired();
             modelBuilder.Property(x => x.Status).IsRequired();
         }
     }

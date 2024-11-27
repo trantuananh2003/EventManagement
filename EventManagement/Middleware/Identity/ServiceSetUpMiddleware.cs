@@ -18,6 +18,7 @@ namespace EventManagement.Middleware.Identity
             Services.AddScoped<ISearchService, SearchService>();
             Services.AddScoped<IOrderService, OrderService>();
             Services.AddScoped<IPurchasedTicketService, PurchasedTicketService>();
+            Services.AddScoped<ISupportChatService, SupportChatService>();
 
             return Services;
         }

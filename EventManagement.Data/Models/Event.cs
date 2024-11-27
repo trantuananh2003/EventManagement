@@ -15,7 +15,8 @@ namespace EventManagement.Data.Models
         public string Description { get; set; }
         public string UrlImage { get; set; }
         public string Location { get; set; }
-        public string Status { get; set; }
-        public string EventType { get; set; }
+        public string Privacy { get; set; } //Public || Private
+        public string Status { get; set; } //OnSale || SoldOut || Cancelled || Postponted
+        public string EventType { get; set; } //Multiple || One
     }
 }

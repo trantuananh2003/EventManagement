@@ -2,24 +2,18 @@ using Azure.Storage.Blobs;
 using EventManagement;
 using EventManagement.Data.DataConnect;
 using EventManagement.Data.Models;
-using EventManagement.Data.Queries;
-using EventManagement.Data.Repository;
-using EventManagement.Data.Repository.IRepository;
 using EventManagement.Filter;
+using EventManagement.Hubs;
 using EventManagement.Middleware;
 using EventManagement.Middleware.Identity;
 using EventManagement.Models;
 using EventManagement.Service;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Net.Security;
-using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -96,6 +90,7 @@ builder.Services.AddSetupAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
 builder.Services.AddCors();
+builder.Services.AddSignalR();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -152,5 +147,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<SupportChatHub>("/hubs/supportchat");
 
 app.Run();

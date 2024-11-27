@@ -16,6 +16,9 @@ namespace EventManagement.Common
         public const string Status_Cancelled = "cancelled";
         public const string Status_Postponed = "postponed";
 
+        public const string Privacy_Public = "Public";
+        public const string Privacy_Private = "Private";
+
         public const string EventType_Single = "single";
         public const string EventType_Multiple = "multiple";
 
@@ -23,4 +26,19 @@ namespace EventManagement.Common
 
         public const string SD_URL_LINK_RESETPASSWORD = "http://localhost:3000/reset-password";
     }
+
+    public enum Privacy
+    {
+        Public,  // Thay thế 'public' bằng 'Public'
+        Private  // Thay thế 'private' bằng 'Private'
+    }
+
+    public enum EOrderCreate
+    {
+        OutOfStock,
+        NotFoundItem,
+        Done,
+    }
+
+
 }

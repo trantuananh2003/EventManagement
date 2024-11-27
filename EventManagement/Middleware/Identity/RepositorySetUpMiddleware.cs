@@ -19,6 +19,8 @@ namespace EventManagement.Middleware.Identity
             Services.AddScoped<IOrderHeaderRepository, OrderHeaderRepository>();
             Services.AddScoped<IMemberOrganizationRepository, MemberOrganizationRepository>();
             Services.AddScoped<IPurchasedTicketRepository, PurchasedTicketRepository>();
+            Services.AddScoped<ISupportChatRoomRepository, SupportChatRoomRepository>();
+            Services.AddScoped<IMessageRepository, MessageRepository>();
 
             return Services;
         }
