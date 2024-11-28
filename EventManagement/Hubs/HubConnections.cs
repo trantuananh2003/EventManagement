@@ -1,4 +1,6 @@
-﻿namespace EventManagement.Hubs
+﻿using Microsoft.AspNetCore.SignalR;
+
+namespace EventManagement.Hubs
 {
     public static class HubConnections
     {

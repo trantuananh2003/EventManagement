@@ -14,6 +14,10 @@ namespace EventManagement.Data.FluentConfig.FluentSupportChatRoom
             modelBuilder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.SenderId).IsRequired();
             modelBuilder.Property(x => x.Content).IsRequired();
             modelBuilder.Property(x => x.IsSupport).IsRequired();
+            modelBuilder.Property(x => x.SendAt)
+                .HasColumnType("datetime")
+                .HasDefaultValue(new DateTime(1753, 1, 1))
+                .IsRequired();
         }
     }
 }

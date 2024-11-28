@@ -61,6 +61,9 @@ namespace EventManagement
             CreateMap<ApplicationUser, UserOrganizationDto>().ReverseMap();
             CreateMap<PurchasedTicket, PurchasedTicketDto>().ReverseMap();
             CreateMap<SupportChatRoom, SupportChatRoomDto>().ReverseMap();
+            CreateMap<MessageDto, Message>();
+            CreateMap<Message, MessageDto>().ForMember(dest => dest.SendAt, opt =>
+                    opt.MapFrom(src => src.SendAt.ToString("yyyy-MM-dd HH:mm:ss")));
 
             //Query
             CreateMap<ModelApi.SearchItemDto.HomeEventDto, ModelData.HomeEventDto>().ReverseMap();

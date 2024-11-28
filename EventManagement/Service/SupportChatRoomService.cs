@@ -11,8 +11,10 @@ namespace EventManagement.Service
     {
         public Task<List<SupportChatRoomDto>> GetChatRoomsByOrganizationId(string OrganizationId);
         public Task<List<SupportChatRoomDto>> GetChatRoomsByUserId(string UserId);
+        public Task<List<MessageDto>> GetMessages(string roomId);
+
         public Task CreateSupportChatRoom(string organizationId, string senderId, string content, Boolean isSupport);
-        public Task SendMessage(string senderId, string roomId, string content, bool isSupport);
+        public Task<MessageDto> SendMessage(string senderId, string roomId, string content, bool isSupport);
     }
 
     public class SupportChatService : ISupportChatService
@@ -33,7 +35,7 @@ namespace EventManagement.Service
 
         public  async Task<List<SupportChatRoomDto>> GetChatRoomsByOrganizationId(string OrganizationId)
         {
-            var listEntity = await _dbSupportChatRoom.GetAllAsync(x => x.OrganizationId == OrganizationId);
+            var listEntity = await _dbSupportChatRoom.GetAllAsync(x => x.OrganizationId == OrganizationId, includeProperties: "User");
             var listDto = _mapper.Map<List<SupportChatRoomDto>>(listEntity);
 
             return listDto;
@@ -41,7 +43,7 @@ namespace EventManagement.Service
 
         public async Task<List<SupportChatRoomDto>> GetChatRoomsByUserId(string UserId)
         {
-            var listEntity = await _dbSupportChatRoom.GetAllAsync(x => x.UserId == UserId);
+            var listEntity = await _dbSupportChatRoom.GetAllAsync(x => x.UserId == UserId, includeProperties: "Organization");
             var listDto = _mapper.Map<List<SupportChatRoomDto>>(listEntity);
 
             return listDto;
@@ -71,20 +73,45 @@ namespace EventManagement.Service
             await _dbSupportChatRoom.SaveAsync();
         }
 
-        public async Task SendMessage(string senderId, string roomId ,string content,bool isSupport)
+        public async Task<MessageDto> SendMessage(string senderId, string roomId ,string content,bool isSupport)
         {
-            var charRoom = await _dbSupportChatRoom.GetAsync(x => x.SupportChatRoomId == roomId);
+            var chatRoom = await _dbSupportChatRoom.GetAsync(x => x.SupportChatRoomId == roomId);
             var message = new Message()
             {
                 MessageId = Guid.NewGuid().ToString(),
-                SupportChatRoomId = charRoom.SupportChatRoomId,
+                SupportChatRoomId = chatRoom.SupportChatRoomId,
                 Content = content,
                 IsSupport = isSupport,
                 SenderId = senderId,
+                SendAt = DateTime.Now,
             };
 
             await _dbMessage.CreateAsync(message);
             await _dbMessage.SaveAsync();
+
+            var messageDto = new MessageDto()
+            {
+                MessageId = message.MessageId,
+                IsSupport = isSupport,
+                SenderId = senderId,
+                SupportChatRoomId = roomId,
+                Content = content,
+                SendAt =  message.SendAt.ToString("yyyy-MM-dd HH:mm:ss")
+            };
+
+            return messageDto;
         }
+
+        public async Task<List<MessageDto>> GetMessages(string roomId)
+        {
+            var listEntity = await _dbMessage.GetAllAsync(x => x.SupportChatRoomId == roomId);
+            var listDto = _mapper.Map<List<MessageDto>>(listEntity);
+
+            // Sắp xếp theo SendAt (cũ đến mới)
+            listDto = listDto.OrderBy(x => x.SendAt).ToList(); 
+
+            return listDto;
+        }
+
     }
 }

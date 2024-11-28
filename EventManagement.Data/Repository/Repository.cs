@@ -227,5 +227,4 @@ namespace EventManagement.Data.Repository
             }
         }
     }
-
 }

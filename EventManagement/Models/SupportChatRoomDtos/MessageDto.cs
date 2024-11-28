@@ -1,16 +1,18 @@
-﻿namespace EventManagement.Data.Models.ChatRoom
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EventManagement.Data.Models.ChatRoom
 {
-    public class Message
+    public class MessageDto
     {
         public string MessageId { get; set; }
         public string SupportChatRoomId { get; set; }
-        public SupportChatRoom SupportChatRoom { get; set; }
-
         public string SenderId { get; set; }
-        public ApplicationUser User { get; set; }
-
         public bool IsSupport { get; set; }
         public string Content { get; set; }
-        public DateTime SendAt { get; set; }
+        public string SendAt { get; set; }
     }
 }

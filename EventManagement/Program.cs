@@ -1,4 +1,4 @@
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using EventManagement;
 using EventManagement.Data.DataConnect;
 using EventManagement.Data.Models;
@@ -89,7 +89,16 @@ builder.Services.AddAuthentication(u =>
 builder.Services.AddSetupAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
-builder.Services.AddCors();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost", builder =>
+    {
+        builder.WithOrigins("http://localhost:3000") // Cho phép frontend từ localhost:3000
+               .AllowCredentials()  // Cho phép gửi cookies và credentials
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+    });
+});
 builder.Services.AddSignalR();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -127,9 +136,7 @@ builder.Services.AddSwaggerGen(options => {
 var app = builder.Build();
 
 // Add CORS policy
-
 app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithExposedHeaders("*"));
-// Rest of the code...
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
