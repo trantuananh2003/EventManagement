@@ -24,8 +24,6 @@ namespace EventManagement.Controllers
         [HttpGet("[controller]/{userId}", Name = "GetOrganizationByIdUser")]
         public async Task<ActionResult<ApiResponse>> Get([FromRoute] string userId)
         {
-            // Add delay of 3 seconds
-            await Task.Delay(3000);
 
             if (string.IsNullOrEmpty(userId))
             {
@@ -35,8 +33,6 @@ namespace EventManagement.Controllers
                     IsSuccess = false
                 });
             }
-
-
 
             var organization = await _organizationService.GetOrganizationByIdUser(userId);
 

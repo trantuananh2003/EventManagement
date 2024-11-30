@@ -158,7 +158,7 @@ namespace EventManagement.Service
 
         public async Task<OrderHeaderDto> GetOrderHeaderById(string idOrderHeader)
         {
-            var orderHeaderEntity = await _dbOrderHeader.GetAsync(x => x.IdOrderHeader == idOrderHeader);
+            var orderHeaderEntity = await _dbOrderHeader.GetAsync(x => x.IdOrderHeader == idOrderHeader, includeProperties: "User");
             var orderHeaderDto = _mapper.Map<OrderHeaderDto>(orderHeaderEntity);
             return orderHeaderDto;
         }

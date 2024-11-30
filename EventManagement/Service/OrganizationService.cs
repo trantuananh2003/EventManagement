@@ -2,6 +2,7 @@
 using Azure.Storage.Blobs.Models;
 using EventManagement.Data.Models;
 using EventManagement.Data.Repository.IRepository;
+using EventManagement.Models.ModelsDto;
 using EventManagement.Models.ModelsDto.OrganizationDtos;
 using Microsoft.AspNetCore.Identity;
 
@@ -16,7 +17,7 @@ namespace EventManagement.Service
         Task<OrganizationDto> GetOrganizationByIdUser(string idUserOwner);
         Task<List<OrganizationDto>> GetJoinedOrganizationsByIdUser(string userId);
 
-        Task AddMember(string emailUser, string idOrganization);
+        Task<ServiceResult> AddMember(string emailUser, string idOrganization);
         Task<(List<MemberOrganizationDto>, int)> GetAllMemberByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber);
         Task KickMember(string memberId);
     }
@@ -27,6 +28,7 @@ namespace EventManagement.Service
         private readonly IMemberOrganizationRepository _dbMemberOrganization;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
+        private ServiceResult _serviceResult;
 
         public OrganizationService(IOrganizationRepository dbOrganization, IMemberOrganizationRepository dbMemberOrganization, IMapper mapper, UserManager<ApplicationUser> userManager)
         {
@@ -34,9 +36,10 @@ namespace EventManagement.Service
             _dbMemberOrganization = dbMemberOrganization;
             _mapper = mapper;
             _userManager = userManager;
+            _serviceResult = new ServiceResult();
         }
 
-        // Create organization
+        #region Organization
         public async Task CreateOrganization(OrganizationCreateDto modelRequest)
         {
             var modelOrganization = _mapper.Map<Organization>(modelRequest);
@@ -65,18 +68,19 @@ namespace EventManagement.Service
             var organizationReponse = _mapper.Map<OrganizationDto>(organizationEntity);
             return organizationReponse;
         }
-
-        public async Task AddMember(string emailUser, string idOrganization)
+        public async Task<List<OrganizationDto>> GetJoinedOrganizationsByIdUser(string userId)
         {
-            await _dbMemberOrganization.CreateAsync(new MemberOrganization
+            var listMemberOrganization = await _dbMemberOrganization.GetAllAsync(o => o.IdUser == userId, includeProperties: "Organization");
+            var listOrganizationDto = new List<OrganizationDto>();
+            foreach (var memberOrganization in listMemberOrganization)
             {
-                MemberId = Guid.NewGuid().ToString(),
-                IdOrganization = idOrganization,
-                IdUser = _userManager.FindByEmailAsync(emailUser).Result.Id
-            });
-            await _dbMemberOrganization.SaveAsync();
+                listOrganizationDto.Add(_mapper.Map<OrganizationDto>(memberOrganization.Organization));
+            }
+            return listOrganizationDto;
         }
+        #endregion
 
+        #region Member Organization
         public async Task<(List<MemberOrganizationDto>, int)> GetAllMemberByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber)
         {
             var listEntity = await _dbMemberOrganization.GetAllAsync(o => o.IdOrganization == idOrganization
@@ -93,22 +97,37 @@ namespace EventManagement.Service
             return (listDto, totalRow);
         }
 
+        public async Task<ServiceResult> AddMember(string emailUser, string idOrganization)
+        {
+            var userEntity = await _userManager.FindByEmailAsync(emailUser);
+            var entity = await _dbMemberOrganization.GetAsync(x => x.IdOrganization == idOrganization && x.IdUser == userEntity.Id);
+
+            //Kiem tra trung thanh vien
+            if(entity != null) //Co thanh vien
+            {
+                _serviceResult.IsSuccess = false;
+                _serviceResult.Message.Add("Already user in your");
+                return _serviceResult;
+            }
+
+            await _dbMemberOrganization.CreateAsync(new MemberOrganization
+            {
+                MemberId = Guid.NewGuid().ToString(),
+                IdOrganization = idOrganization,
+                IdUser = _userManager.FindByEmailAsync(emailUser).Result.Id
+            });
+            await _dbMemberOrganization.SaveAsync();
+
+            _serviceResult.IsSuccess = true;
+            return _serviceResult;
+        }
+
         public async Task KickMember(string memberId)
         {
             var entity = await _dbMemberOrganization.GetAsync(o => o.MemberId == memberId);
             _dbMemberOrganization.Remove(entity);
             await _dbMemberOrganization.SaveAsync();
         }
-
-        public async Task<List<OrganizationDto>> GetJoinedOrganizationsByIdUser(string userId)
-        {
-            var listMemberOrganization = await _dbMemberOrganization.GetAllAsync(o => o.IdUser == userId, includeProperties: "Organization");
-            var listOrganizationDto = new List<OrganizationDto>();
-            foreach (var memberOrganization in listMemberOrganization)
-            {
-                listOrganizationDto.Add(_mapper.Map<OrganizationDto>(memberOrganization.Organization));
-            }
-            return listOrganizationDto;
-        }
+        #endregion
     }
 }

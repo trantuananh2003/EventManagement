@@ -84,7 +84,7 @@ namespace EventManagement.Controllers
                     new Claim("email", userFromDb.Email),
                     new Claim("fullName", userFromDb.FullName),
                     new Claim("id", userFromDb.Id.ToString()),
-                    new Claim("urlImage", userFromDb.UrlImage),
+                    new Claim("urlImage", userFromDb.UrlImage??  String.Empty),
                     new Claim(ClaimTypes.NameIdentifier, userFromDb.Id.ToString()),
                     new Claim(ClaimTypes.Email, userFromDb.UserName.ToString()),
                 }),

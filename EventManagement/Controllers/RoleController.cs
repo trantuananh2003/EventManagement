@@ -187,7 +187,7 @@ namespace EventManagement.Controllers
         }
         #endregion
 
-        #region RoleUser
+        #region ManageMember
         [HttpGet("members")]
         public async Task<ActionResult<ApiResponse>> GetMembers([FromQuery] string idOrganization, string searchString,
             int pageSize = 0, int pageNumber = 1)
@@ -213,12 +213,21 @@ namespace EventManagement.Controllers
         [HttpPost("member")]
         public async Task<ActionResult<ApiResponse>> AddMember([FromBody] MemberOrganizationCreateDto model)
         {
-            await _organizationService.AddMember(model.EmailUser,model.IdOrganization);
-            return Ok(new ApiResponse
+            var serviceResult = await _organizationService.AddMember(model.EmailUser,model.IdOrganization);
+
+            if (serviceResult.IsSuccess)
             {
-                StatusCode = HttpStatusCode.OK,
-                IsSuccess = true
-            });
+                _apiResponse.IsSuccess = true;
+                _apiResponse.StatusCode = HttpStatusCode.OK;
+                return Ok(_apiResponse);
+            }
+            else
+            {
+                _apiResponse.IsSuccess = false;
+                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
+                _apiResponse.ErrorMessages = serviceResult.Message;
+                return Ok(_apiResponse);
+            }
         }
         [HttpDelete("member")]
         public async Task<ActionResult<ApiResponse>> KickMember([FromQuery] string memberId)
@@ -230,6 +239,10 @@ namespace EventManagement.Controllers
                 IsSuccess = true
             });
         }
+
+        #endregion
+
+        #region ManageUserRole
         [HttpGet("user-roles")]
         public async Task<ActionResult<ApiResponse>> GetUserRoles([FromQuery] string userId)
         {
