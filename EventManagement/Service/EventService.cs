@@ -85,7 +85,7 @@ namespace EventManagement.Service
 
             var eventEntity = _mapper.Map<Event>(modelRequest);
             eventEntity.IdEvent = Guid.NewGuid().ToString(); // Tạo IdEvent mới
-            eventEntity.Privacy = Privacy.Private.ToString();
+            eventEntity.Privacy = EPrivacy.Private.ToString();
             eventEntity.UrlImage = await _blobService.UploadBlob(fileName, SD.SD_Storage_Containter, modelRequest.File);
 
             await _dbEvent.CreateAsync(eventEntity); // Lưu event mới vào database

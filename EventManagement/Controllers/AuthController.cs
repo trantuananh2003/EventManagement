@@ -3,6 +3,7 @@ using EventManagement.Data.DataConnect;
 using EventManagement.Data.Models;
 using EventManagement.Models;
 using EventManagement.Models.ModelsDto;
+using EventManagement.Models.ModelsDto.Profile;
 using EventManagement.Service;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -25,11 +26,13 @@ namespace EventManagement.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IBlobService _blobService;
         private readonly SendMailService _sendMailService;
 
         public AuthController(ApplicationDbContext db, IConfiguration configuration,
                     UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, 
-                    SignInManager<ApplicationUser> signInManager, SendMailService sendMailService)
+                    SignInManager<ApplicationUser> signInManager, SendMailService sendMailService,
+                    IBlobService blobService)
         {
             _db = db;
             secretKey = configuration.GetValue<string>("ApiSetting:Secret");
@@ -38,6 +41,7 @@ namespace EventManagement.Controllers
             _roleManager = roleManager;
             _signInManager = signInManager;
             _sendMailService = sendMailService;
+            _blobService = blobService;
         }
 
         [HttpPost("login")]
@@ -80,6 +84,7 @@ namespace EventManagement.Controllers
                     new Claim("email", userFromDb.Email),
                     new Claim("fullName", userFromDb.FullName),
                     new Claim("id", userFromDb.Id.ToString()),
+                    new Claim("urlImage", userFromDb.UrlImage),
                     new Claim(ClaimTypes.NameIdentifier, userFromDb.Id.ToString()),
                     new Claim(ClaimTypes.Email, userFromDb.UserName.ToString()),
                 }),
@@ -226,6 +231,79 @@ namespace EventManagement.Controllers
             if (identity != null)
             {
                 IEnumerable<Claim> claims = identity.Claims;
+            }
+        }
+
+        [HttpGet("profile/{userId}")]
+        public async Task<ActionResult<ApiResponse>> GetProfile([FromRoute] string userId)
+        {
+            try
+            {
+                ApplicationUser userFromDb = await _userManager.FindByIdAsync(userId);
+
+                if (userFromDb == null)
+                {
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("User not found");
+                    return NotFound(_response);
+                }
+
+                ProfileDto profile = new ProfileDto
+                {
+                    UrlImage = userFromDb.UrlImage,
+                    FullName = userFromDb.FullName,
+                    Email = userFromDb.Email
+                };
+
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.IsSuccess = true;
+                _response.Result = profile;
+                return Ok(_response);
+            }
+            catch (Exception)
+            {
+                _response.StatusCode = HttpStatusCode.InternalServerError;
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add("Error retrieving user profile");
+                return StatusCode((int)HttpStatusCode.InternalServerError, _response);
+            }
+        }
+
+        [HttpPut("profile/{userId}")]
+        public async Task<ActionResult<ApiResponse>> PutProfile([FromRoute] string userId, [FromForm] UpdateProfileDto modelUpdateDto)
+        {
+            var userEntity = await _userManager.FindByIdAsync(userId);
+
+            if (modelUpdateDto.File != null && modelUpdateDto.File.Length > 0 )
+            {
+                string fileName = $"{Guid.NewGuid()}{Path.GetExtension(modelUpdateDto.File.FileName)}";
+                if (string.IsNullOrEmpty(userEntity.UrlImage))
+                {
+                    userEntity.UrlImage = await _blobService.UploadBlob(fileName, SD.SD_Storage_Containter, modelUpdateDto.File);
+                }
+                else
+                {
+                    await _blobService.DeleteBlob(userEntity.UrlImage.Split('/').Last(), SD.SD_Storage_Containter);
+                    userEntity.UrlImage = await _blobService.UploadBlob(fileName, SD.SD_Storage_Containter, modelUpdateDto.File);
+                }
+            }
+            userEntity.FullName = modelUpdateDto.FullName;
+            
+            var result = await _userManager.UpdateAsync(userEntity);
+
+            if (result.Succeeded)
+            {
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.IsSuccess = true;
+                return Ok(_response);
+            }
+            else
+            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add("Error updating user profile");
+                return BadRequest(_response);
             }
         }
     }

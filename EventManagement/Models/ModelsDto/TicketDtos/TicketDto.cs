@@ -14,7 +14,7 @@ namespace EventManagement.Models.ModelsDto.TicketDtos
         public string SaleStartDate { get; set; }
         public string SaleEndDate { get; set; }
         public string Description { get; set; }
-        // Enum for Status
+        // Enum for Status sale
         public string Status { get; set; }
 
         // Enum for Visibility

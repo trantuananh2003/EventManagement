@@ -1,4 +1,5 @@
-﻿using EventManagement.Models;
+﻿using EventManagement.Common;
+using EventManagement.Models;
 using EventManagement.Models.ModelsDto.EventDtos;
 using EventManagement.Models.ModelsDto.TicketDtos;
 using EventManagement.Service;
@@ -65,8 +66,10 @@ namespace EventManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> Post([FromBody] TicketCreateDto itemCreate)
         {
+            var check = Enum.IsDefined(typeof(EStatusTicket), itemCreate.Status);
+            Console.WriteLine(check);
 
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid && !Enum.IsDefined(typeof(EStatusTicket), itemCreate.Status))
             {
                 _apiResponse.StatusCode = HttpStatusCode.BadRequest;
                 _apiResponse.IsSuccess = false;

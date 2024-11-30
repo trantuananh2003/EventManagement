@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EventManagement.Common
+﻿namespace EventManagement.Common
 {
     //Static Define
     public static class SD
@@ -27,7 +21,7 @@ namespace EventManagement.Common
         public const string SD_URL_LINK_RESETPASSWORD = "http://localhost:3000/reset-password";
     }
 
-    public enum Privacy
+    public enum EPrivacy
     {
         Public,  // Thay thế 'public' bằng 'Public'
         Private  // Thay thế 'private' bằng 'Private'
@@ -40,5 +34,22 @@ namespace EventManagement.Common
         Done,
     }
 
+    //Ticket 
+    public enum EStatusTicket
+    {
+        OnSale,
+        SoldOut,
+    }
 
+    public enum ESaleMethodTicket
+    {
+        Online,
+        OnSite,
+    }
+
+    public enum EVisibilityTicket
+    {
+        Visable,
+        Hidden,
+    }
 }

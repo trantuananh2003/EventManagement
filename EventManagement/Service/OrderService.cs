@@ -93,7 +93,10 @@ namespace EventManagement.Service
                         ticketEntity.Quantity = remainingQuantity;
 
                         // Kiểm tra hết hàng
-                        if (remainingQuantity < 0)
+                        if (remainingQuantity < 0 
+                            || ticketEntity.Status == EStatusTicket.SoldOut.ToString() 
+                            || ticketEntity.Visibility == EVisibilityTicket.Hidden.ToString()
+                            || ticketEntity.SaleMethod == ESaleMethodTicket.OnSite.ToString())
                         {
                             transaction.Rollback();
                             return EOrderCreate.OutOfStock;

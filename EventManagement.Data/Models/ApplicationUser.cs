@@ -13,5 +13,6 @@ namespace EventManagement.Data.Models
         { }
 
         public string FullName { get; set; }
+        public string UrlImage { get; set; }
     }
 }

@@ -142,7 +142,7 @@ namespace EventManagement.Controllers
         public async Task<ActionResult<ApiResponse>> SetPrivacyEventByID([FromRoute] string idEvent,
             [FromBody] string privacy)
         {
-            if(Enum.IsDefined(typeof(Privacy), privacy))
+            if(Enum.IsDefined(typeof(EPrivacy), privacy))
             {
                 await _eventService.UpdatePrivacy(idEvent, privacy);
             }

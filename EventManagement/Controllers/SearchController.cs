@@ -37,7 +37,7 @@ namespace EventManagement.Controllers
         public async Task<ActionResult<ApiResponse>> GetEventDetail([FromRoute] string idEvent)
         {
             var entity = await _eventService.GetEventById(idEvent);
-            if (entity.Privacy == Privacy.Private.ToString())
+            if (entity.Privacy == EPrivacy.Private.ToString())
             {
                 _apiResponse.Result = SD.Privacy_Private;
                 _apiResponse.StatusCode = HttpStatusCode.OK;
