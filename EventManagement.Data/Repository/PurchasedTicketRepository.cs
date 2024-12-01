@@ -13,7 +13,7 @@ namespace EventManagement.Data.Repository
             _db = context;
         }
 
-        public async Task UpdateAsync(PurchasedTicket entity)
+        public async Task Update(PurchasedTicket entity)
         {
             var ticket = await _db.PurchasedTickets.FirstOrDefaultAsync(t => t.IdPurchasedTicket == entity.IdPurchasedTicket);
             if (ticket != null)
@@ -21,8 +21,8 @@ namespace EventManagement.Data.Repository
                 ticket.FullName = entity.FullName;
                 ticket.Email = entity.Email;
                 ticket.Phone = entity.Phone;
+                _db.Update(ticket);
             }
-            _db.Update(ticket);
         }
     }
 }

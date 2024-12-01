@@ -11,6 +11,7 @@ namespace EventManagement.Models.ModelsDto.OrganizationDtos
         public string Description { get; set; }
         public string City { get; set; }
         public string Country { get; set; }
+        public IFormFile? File { get; set; }
     }
 
 }

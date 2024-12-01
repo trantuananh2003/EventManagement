@@ -9,6 +9,6 @@ namespace EventManagement.Data.Repository.IRepository
 {
     public interface IPurchasedTicketRepository: IRepository<PurchasedTicket>
     {
-        Task UpdateAsync(PurchasedTicket entity);
+        Task Update(PurchasedTicket entity);
     }
 }

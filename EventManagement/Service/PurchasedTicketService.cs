@@ -65,7 +65,7 @@ namespace EventManagement.Service
         {
             var purchasedTicket = _mapper.Map<PurchasedTicket>(model);
             purchasedTicket.IdPurchasedTicket = IdPurchasedTicket;
-            await _dbPurchasedTicket.UpdateAsync(purchasedTicket);
+            await _dbPurchasedTicket.Update(purchasedTicket);
             await _dbPurchasedTicket.SaveAsync();
         }
     }

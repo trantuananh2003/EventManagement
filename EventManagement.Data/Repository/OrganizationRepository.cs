@@ -12,7 +12,7 @@ namespace EventManagement.Data.Repository
             _db = db;
         }
 
-        public async Task<Organization> UpdateAsync(Organization entity)
+        public async Task Update(Organization entity)
         {
             var existingEntity = await _db.Organizations.FindAsync(entity.IdOrganization);
             if (existingEntity != null)
@@ -21,9 +21,9 @@ namespace EventManagement.Data.Repository
                 existingEntity.Description = entity.Description;
                 existingEntity.City = entity.City;
                 existingEntity.Country = entity.Country;
+                existingEntity.UrlImage = entity.UrlImage;
                 _db.Organizations.Update(existingEntity);
             }
-            return existingEntity;
         }
     }
 }

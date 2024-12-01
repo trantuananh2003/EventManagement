@@ -79,9 +79,9 @@ namespace EventManagement.Controllers
         }
 
         [HttpPut("[controller]/{userId}")]
-        public async Task<ActionResult<ApiResponse>> Put([FromRoute] string userId, [FromBody] OrganizationUpdateDto model)
+        public async Task<ActionResult<ApiResponse>> Put([FromRoute] string userId, [FromForm] OrganizationUpdateDto modelUpdateDto)
         {
-            if (model == null || !ModelState.IsValid)
+            if (modelUpdateDto == null || !ModelState.IsValid)
             {
                 return BadRequest(new ApiResponse
                 {
@@ -101,7 +101,7 @@ namespace EventManagement.Controllers
                 });
             }
 
-            await _organizationService.UpdateOrganization(model);
+            await _organizationService.UpdateOrganization(modelUpdateDto);
 
             return Ok(new ApiResponse
             {

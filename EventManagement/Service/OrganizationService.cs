@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Azure.Storage.Blobs.Models;
+using EventManagement.Common;
 using EventManagement.Data.Models;
 using EventManagement.Data.Repository.IRepository;
 using EventManagement.Models.ModelsDto;
@@ -26,17 +27,20 @@ namespace EventManagement.Service
     {
         private readonly IOrganizationRepository _dbOrganization;
         private readonly IMemberOrganizationRepository _dbMemberOrganization;
+        private readonly IBlobService _blobService;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
         private ServiceResult _serviceResult;
 
-        public OrganizationService(IOrganizationRepository dbOrganization, IMemberOrganizationRepository dbMemberOrganization, IMapper mapper, UserManager<ApplicationUser> userManager)
+        public OrganizationService(IOrganizationRepository dbOrganization, IMemberOrganizationRepository dbMemberOrganization, 
+            IMapper mapper, UserManager<ApplicationUser> userManager, IBlobService blobService)
         {
             _dbOrganization = dbOrganization;
             _dbMemberOrganization = dbMemberOrganization;
             _mapper = mapper;
             _userManager = userManager;
             _serviceResult = new ServiceResult();
+            _blobService = blobService;
         }
 
         #region Organization
@@ -48,10 +52,23 @@ namespace EventManagement.Service
             await _dbOrganization.SaveAsync();
         }
 
-        public async Task UpdateOrganization(OrganizationUpdateDto modelRequest)
+        public async Task UpdateOrganization(OrganizationUpdateDto modelUpdateDto)
         {
-            var modelOrganization = _mapper.Map<Organization>(modelRequest);
-            await _dbOrganization.UpdateAsync(modelOrganization);
+            var modelEntity = await _dbOrganization.GetAsync(x => x.IdOrganization == modelUpdateDto.IdOrganization);
+            var modelOrganization = _mapper.Map<Organization>(modelUpdateDto);
+
+            if (modelUpdateDto.File != null && modelUpdateDto.File.Length > 0)
+            {
+                string fileName = $"{Guid.NewGuid()}{Path.GetExtension(modelUpdateDto.File.FileName)}";
+
+                if (!string.IsNullOrEmpty(modelEntity.UrlImage))
+                {
+                    await _blobService.DeleteBlob(modelEntity.UrlImage.Split('/').Last(), SD.SD_Storage_Containter);
+                }
+                modelOrganization.UrlImage = await _blobService.UploadBlob(fileName, SD.SD_Storage_Containter, modelUpdateDto.File);
+            }
+
+            await _dbOrganization.Update(modelOrganization);
             await _dbOrganization.SaveAsync();
         }
 
