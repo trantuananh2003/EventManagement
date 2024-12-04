@@ -1,4 +1,5 @@
 ﻿using EventManagement.Data.DataConnect;
+using EventManagement.Data.Helpers;
 using EventManagement.Data.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -22,18 +23,6 @@ namespace EventManagement.Data.Repository
             try
             {
                 await dbSet.AddAsync(entity);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while creating the entity.", ex);
-            }
-        }
-
-        public async Task CreateRangeASync(List<T> listEntity)
-        {
-            try
-            {
-                await dbSet.AddRangeAsync(listEntity);
             }
             catch (Exception ex)
             {
@@ -80,18 +69,35 @@ namespace EventManagement.Data.Repository
             {
                 IQueryable<T> query = dbSet;
 
+                if (includeProperties != null)
+                {
+                    foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        query = query.Include(includeProp);
+                    }
+                }
+
                 if (filter != null)
                 {
                     query = query.Where(filter);
                 }
-                if(pageSize >0)
-                {
-                    if(pageSize > 100)
-                    {
-                        pageSize = 100;
-                    }
-                    query = query.Skip(pageSize * (pageNumber - 1)).Take(pageSize);
-                }
+
+                return await query.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while getting all the entities.", ex);
+            }
+        }
+
+        public async Task<PagedList<T>> GetPagedAllAsync(Expression<Func<T, bool>>? filter = null
+            , List<(Expression<Func<T, object>> orderBy, bool isDescending)>? orderByList = null
+            , string? includeProperties = null
+            , int pageSize = 0, int pageNumber = 1)
+        {
+            try
+            {
+                IQueryable<T> query = dbSet;
 
                 if (includeProperties != null)
                 {
@@ -100,11 +106,38 @@ namespace EventManagement.Data.Repository
                         query = query.Include(includeProp);
                     }
                 }
-                return await query.ToListAsync();
+
+                // Sắp xếp theo nhiều tiêu chí nếu có
+                if (orderByList != null && orderByList.Any())
+                {
+                    // Áp dụng sắp xếp đầu tiên
+                    var firstOrderBy = orderByList.First();
+                    IOrderedQueryable<T> orderedQuery = firstOrderBy.isDescending
+                        ? query.OrderByDescending(firstOrderBy.orderBy)
+                        : query.OrderBy(firstOrderBy.orderBy);
+
+                    // Áp dụng các sắp xếp tiếp theo
+                    foreach (var order in orderByList.Skip(1))
+                    {
+                        orderedQuery = order.isDescending
+                            ? orderedQuery.ThenByDescending(order.orderBy)
+                            : orderedQuery.ThenBy(order.orderBy);
+                    }
+
+                    // Cập nhật lại truy vấn với kết quả đã sắp xếp
+                    query = orderedQuery;
+                }
+
+                if (filter != null)
+                {
+                    query = query.Where(filter);
+                }
+
+                return await PagedList<T>.ToPagedList(query, pageNumber, pageSize);
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while getting all the entities.", ex);
+                throw new Exception("An error occurred while getting the all paged entities.", ex);
             }
         }
 
@@ -200,31 +233,5 @@ namespace EventManagement.Data.Repository
             return _db.Database.BeginTransaction();
         }
 
-        public async Task<int> CountAllAsync(Expression<Func<T, bool>> filter = null, string includeProperties = null)
-        {
-            try
-            {
-                IQueryable<T> query = dbSet;
-
-                if (filter != null)
-                {
-                    query = query.Where(filter);
-                }
-
-                if (includeProperties != null)
-                {
-                    foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        query = query.Include(includeProp);
-                    }
-                }
-
-                return await query.CountAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while counting all the entities.", ex);
-            }
-        }
     }
 }

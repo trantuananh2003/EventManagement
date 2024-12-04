@@ -10,5 +10,7 @@ namespace EventManagement.Models.SupportChatRoomDtos
         public string OrganizationId { get; set; }
         public Organization Organization { get; set; }
         public string Name { get; set; }
+        public int IsReadFromUser { get; set; }
+        public int IsReadFromOrganizaiton { get; set; }
     }
 }

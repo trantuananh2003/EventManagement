@@ -12,6 +12,7 @@ namespace EventManagement.Data.Queries.ModelDto
         public string EventName { get; set; }
         public string UrlImage { get; set; }
         public string Location { get; set; }
+        public string NearDate { get; set; }
         public int PriceLow { get; set; }
         public int PriceHigh { get; set; }
     }

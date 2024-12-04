@@ -66,7 +66,6 @@ namespace EventManagement
                     opt.MapFrom(src => src.SendAt.ToString("yyyy-MM-dd HH:mm:ss")));
 
             //Query
-            CreateMap<ModelApi.SearchItemDto.HomeEventDto, ModelData.HomeEventDto>().ReverseMap();
             CreateMap<ModelApi.EventDetailViewDto, ModelData.EventDetailViewDto>().ReverseMap();
             CreateMap< ModelData.TicketTimeViewDto, ModelApi.TicketTimeViewDto>().ForMember(dest => dest.ScheduledDate, opt =>
                     opt.MapFrom(src => src.ScheduledDate.ToString("yyyy-MM-dd")));

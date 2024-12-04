@@ -11,6 +11,7 @@ namespace EventManagement.Models.ModelsDto.EventDtos
         public string Description { get; set; }
         public string UrlImage { get; set; }
         public string Location { get; set; }
+        public string Coordinates { get; set; }
         public string Privacy { get; set; }
         public string Status { get; set; }
         public string EventType { get; set; }

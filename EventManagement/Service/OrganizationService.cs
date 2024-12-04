@@ -3,7 +3,9 @@ using Azure.Storage.Blobs.Models;
 using EventManagement.Common;
 using EventManagement.Data.Models;
 using EventManagement.Data.Repository.IRepository;
+using EventManagement.Models;
 using EventManagement.Models.ModelsDto;
+using EventManagement.Models.ModelsDto.EventDtos;
 using EventManagement.Models.ModelsDto.OrganizationDtos;
 using Microsoft.AspNetCore.Identity;
 
@@ -19,7 +21,7 @@ namespace EventManagement.Service
         Task<List<OrganizationDto>> GetJoinedOrganizationsByIdUser(string userId);
 
         Task<ServiceResult> AddMember(string emailUser, string idOrganization);
-        Task<(List<MemberOrganizationDto>, int)> GetAllMemberByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber);
+        Task<PagedListDto<MemberOrganizationDto>> GetAllMemberByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber);
         Task KickMember(string memberId);
     }
 
@@ -98,20 +100,26 @@ namespace EventManagement.Service
         #endregion
 
         #region Member Organization
-        public async Task<(List<MemberOrganizationDto>, int)> GetAllMemberByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber)
+        public async Task<PagedListDto<MemberOrganizationDto>> GetAllMemberByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber)
         {
-            var listEntity = await _dbMemberOrganization.GetAllAsync(o => o.IdOrganization == idOrganization
+            var pagedMemberOrganization = await _dbMemberOrganization.GetPagedAllAsync(o => o.IdOrganization == idOrganization
                     && (string.IsNullOrEmpty(searchString) || o.User.FullName.ToLower().Contains(searchString.ToLower())
                     ), includeProperties: "User",
                     pageSize: pageSize,
                     pageNumber: pageNumber);
 
-            int totalRow = await _dbMemberOrganization.CountAllAsync(o => o.IdOrganization == idOrganization
-                    && (string.IsNullOrEmpty(searchString) || o.User.FullName.ToLower().Contains(searchString.ToLower())
-                    ));
 
-            var listDto = _mapper.Map<List<MemberOrganizationDto>>(listEntity);
-            return (listDto, totalRow);
+            var modelListDto = _mapper.Map<List<MemberOrganizationDto>>(pagedMemberOrganization);
+            var pagedEventDto = new PagedListDto<MemberOrganizationDto>()
+            {
+                CurrentPage = pagedMemberOrganization.CurrentNumber,
+                PageSize = pagedMemberOrganization.PageSize,
+                TotalCount = pagedMemberOrganization.TotalCount,
+                TotalPage = pagedMemberOrganization.TotalPage,
+                Items = modelListDto,
+            };
+
+            return pagedEventDto;
         }
 
         public async Task<ServiceResult> AddMember(string emailUser, string idOrganization)

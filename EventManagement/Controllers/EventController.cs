@@ -59,9 +59,9 @@ namespace EventManagement.Controllers
                 return BadRequest(_apiResponse);
             }
 
-            var (listEventDto, totalRow) = await _eventService.GetAllEvent(idOrganization, searchString, statusEvent,pageSize, pageNumber);
+            var pagedEvents = await _eventService.GetAllPagedEvent(idOrganization, searchString, statusEvent,pageSize, pageNumber);
 
-            if (listEventDto == null)
+            if (pagedEvents.Items == null)
             {
                 _apiResponse.StatusCode = HttpStatusCode.NotFound;
                 _apiResponse.IsSuccess = false;
@@ -70,14 +70,14 @@ namespace EventManagement.Controllers
 
             Pagination pagination = new Pagination()
             {
-                CurrentPage = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRow
+                CurrentPage = pagedEvents.CurrentPage,
+                PageSize = pagedEvents.PageSize,
+                TotalRecords = pagedEvents.TotalCount,
             };
 
             Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pagination));
 
-            _apiResponse.Result = listEventDto;
+            _apiResponse.Result = pagedEvents.Items;
             _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);

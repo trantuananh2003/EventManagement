@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EventManagement.Data.Models.ModelDto
+namespace EventManagement.Data.Queries.ModelDto
 {
     public class AdminOrderOverviewDto
     {

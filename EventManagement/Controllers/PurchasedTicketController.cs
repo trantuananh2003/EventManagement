@@ -3,6 +3,7 @@ using EventManagement.Models;
 using EventManagement.Models.ModelsDto.PurchasedDtos;
 using EventManagement.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Net;
 using System.Text.Json;
 
@@ -32,9 +33,9 @@ namespace EventManagement.Controllers
                 return BadRequest(_apiResponse);
             }
 
-            var (listPurchasedTicketDto, totalRow) = await _purchasedTicketService.GetAllPurchasedTicket(orderHeaderId, searchString, status, pageSize, pageNumber);
+            var pagedModel = await _purchasedTicketService.GetAllPurchasedTicket(orderHeaderId, searchString, status, pageSize, pageNumber);
 
-            if (listPurchasedTicketDto == null)
+            if (pagedModel == null)
             {
                 _apiResponse.StatusCode = HttpStatusCode.NotFound;
                 _apiResponse.IsSuccess = false;
@@ -43,14 +44,14 @@ namespace EventManagement.Controllers
 
             Pagination pagination = new Pagination()
             {
-                CurrentPage = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRow
+                CurrentPage = pagedModel.CurrentPage,
+                PageSize = pagedModel.PageSize,
+                TotalRecords = pagedModel.TotalCount,
             };
 
             Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pagination));
 
-            _apiResponse.Result = listPurchasedTicketDto;
+            _apiResponse.Result = pagedModel.Items;
             _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);

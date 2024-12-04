@@ -192,19 +192,19 @@ namespace EventManagement.Controllers
         public async Task<ActionResult<ApiResponse>> GetMembers([FromQuery] string idOrganization, string searchString,
             int pageSize = 0, int pageNumber = 1)
         {
-            var (listMember,totalRow) = await _organizationService.GetAllMemberByIdOrganization(idOrganization,searchString ,pageSize,pageNumber);
+            var pagedListDto = await _organizationService.GetAllMemberByIdOrganization(idOrganization,searchString ,pageSize,pageNumber);
 
             Pagination pagination = new Pagination()
             {
-                CurrentPage = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRow
+                CurrentPage = pagedListDto.CurrentPage,
+                PageSize = pagedListDto.PageSize,
+                TotalRecords = pagedListDto.TotalCount
             };
             Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pagination));
 
             return Ok(new ApiResponse
             {
-                Result = listMember,
+                Result = pagedListDto.Items,
                 StatusCode = HttpStatusCode.OK,
                 IsSuccess = true
             });

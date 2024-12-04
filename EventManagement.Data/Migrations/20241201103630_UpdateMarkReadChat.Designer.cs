@@ -4,6 +4,7 @@ using EventManagement.Data.DataConnect;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventManagement.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241201103630_UpdateMarkReadChat")]
+    partial class UpdateMarkReadChat
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -201,9 +204,6 @@ namespace EventManagement.Data.Migrations
                     b.Property<int>("IsReadFromUser")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("LastMessageTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -226,9 +226,6 @@ namespace EventManagement.Data.Migrations
                 {
                     b.Property<string>("IdEvent")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Coordinates")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -288,21 +285,6 @@ namespace EventManagement.Data.Migrations
                     b.HasIndex("EventId");
 
                     b.ToTable("EventDates");
-                });
-
-            modelBuilder.Entity("EventManagement.Data.Models.EventTag", b =>
-                {
-                    b.Property<string>("TagId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("EventId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("TagId", "EventId");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("EventTags");
                 });
 
             modelBuilder.Entity("EventManagement.Data.Models.MemberOrganization", b =>
@@ -511,19 +493,6 @@ namespace EventManagement.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("RefreshTokens");
-                });
-
-            modelBuilder.Entity("EventManagement.Data.Models.Tag", b =>
-                {
-                    b.Property<string>("TagId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("TagName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("TagId");
-
-                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("EventManagement.Data.Models.Ticket", b =>
@@ -746,25 +715,6 @@ namespace EventManagement.Data.Migrations
                         .HasForeignKey("EventId");
 
                     b.Navigation("Event");
-                });
-
-            modelBuilder.Entity("EventManagement.Data.Models.EventTag", b =>
-                {
-                    b.HasOne("EventManagement.Data.Models.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EventManagement.Data.Models.Tag", "Tag")
-                        .WithMany()
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-
-                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("EventManagement.Data.Models.MemberOrganization", b =>

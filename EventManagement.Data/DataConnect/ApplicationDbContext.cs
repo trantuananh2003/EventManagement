@@ -28,6 +28,8 @@ namespace EventManagement.Data.DataConnect
         public DbSet<PurchasedTicket> PurchasedTickets { get; set; }
         public DbSet<SupportChatRoom> SupportChatRooms { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<EventTag> EventTags { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,6 +47,8 @@ namespace EventManagement.Data.DataConnect
             modelBuilder.ApplyConfiguration(new FluentPurchasedTicket());
             modelBuilder.ApplyConfiguration(new FluentSupportChatRoom());
             modelBuilder.ApplyConfiguration(new FluentMessage());
+            modelBuilder.ApplyConfiguration(new FluentTag());
+            modelBuilder.ApplyConfiguration(new FluentEventTag());
         }
     }
 }

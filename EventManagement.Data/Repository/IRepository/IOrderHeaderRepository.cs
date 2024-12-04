@@ -1,6 +1,5 @@
 ﻿
 using EventManagement.Data.Models;
-using EventManagement.Data.Models.ModelDto;
 using EventManagement.Data.Queries.ModelDto;
 
 namespace EventManagement.Data.Repository.IRepository

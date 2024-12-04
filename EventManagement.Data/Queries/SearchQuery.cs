@@ -1,11 +1,15 @@
 ﻿using EventManagement.Data.DataConnect;
 using EventManagement.Data.Queries.ModelDto;
+using EventManagement.Data.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Data.Queries
 {
     public interface ISearchQuery
     {
-        Task<List<HomeEventDto>> GetListHomeEvent();
+        Task<PagedList<HomeEventDto>> GetListHomeEvent(
+                    string searchString, DateTime fromDate, DateTime toDate,
+                    int pageNumber, int pageSize);
     }
 
     public class SearchQuery : ISearchQuery
@@ -17,38 +21,35 @@ namespace EventManagement.Data.Queries
             _db = db;
         }
 
-        public async Task<List<HomeEventDto>> GetListHomeEvent()
+        public async Task<PagedList<HomeEventDto>> GetListHomeEvent(
+            string searchString, DateTime fromDate, DateTime toDate,
+            int pageNumber, int pageSize)
         {
-            var HomeEventDtos = _db.Events
-                     .GroupJoin(
-                         _db.Tickets,
-                         e => e.IdEvent,
-                         t => t.EventId,
-                         (e, ticketGroup) => new
-                         {
-                             Event = e,
-                             Tickets = ticketGroup
-                         })
-                     .AsEnumerable()
-                     .Select(e => new HomeEventDto
-                     {
-                         EventId = e.Event.IdEvent,
-                         EventName = e.Event.NameEvent,
-                         UrlImage = e.Event.UrlImage,
-                         Location = e.Event.Location,
-                         PriceLow = e.Tickets.Any() ? e.Tickets.Min(t => t.Price) : 0,
-                         PriceHigh = e.Tickets.Any() ? e.Tickets.Max(t => t.Price) : 0
-                     })
-                     .ToList();
+            var query = from e in _db.Events
+                        join ed in _db.EventDates on e.IdEvent equals ed.EventId
+                        join t in _db.Tickets
+                            on new { EventId = e.IdEvent, EventDateId = ed.IdEventDate }
+                            equals new { t.EventId, t.EventDateId } into ticketGroup // Left join
+                        from t in ticketGroup.DefaultIfEmpty() // Nếu không có vé, vẫn lấy sự kiện
+                        where ed.ScheduledDate.Date >= fromDate.Date && ed.ScheduledDate.Date <= toDate.Date
+                              && (string.IsNullOrEmpty(searchString) || e.NameEvent.Contains(searchString))
+                        group new { e, ed, t } by e.IdEvent into g // Nhóm chỉ dựa trên IdEvent
+                        select new HomeEventDto
+                        {
+                            EventId = g.Key,
+                            EventName = g.First().e.NameEvent, // Lấy thông tin từ một phần tử bất kỳ trong nhóm
+                            UrlImage = g.First().e.UrlImage,
+                            Location = g.First().e.Location,
+                            NearDate = g.Min(x => x.ed.ScheduledDate).ToString("dd-mm-yyyy"), // Ngày gần nhất
+                            PriceLow = g.Where(x => x.t != null).Min(x => (int?)x.t.Price) ?? 0, // Giá thấp nhất trong nhóm
+                            PriceHigh = g.Where(x => x.t != null).Max(x => (int?)x.t.Price) ?? 0// Giá cao nhất trong nhóm
+                        };
 
-            foreach (var homeEvent in HomeEventDtos)
-            {
-                Console.WriteLine("Name Evnet:" + homeEvent.EventName);
-                Console.WriteLine("Price high" + homeEvent.PriceHigh);
-                Console.WriteLine("Price low" + homeEvent.PriceLow);
-            }
 
-            return HomeEventDtos;
+            // Trả về kết quả phân trang
+            var homeEventDtos = await PagedList<HomeEventDto>.ToPagedList(query, pageNumber, pageSize);
+
+            return homeEventDtos;
         }
     }
 }

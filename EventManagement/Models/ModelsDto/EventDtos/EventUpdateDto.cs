@@ -11,7 +11,7 @@ namespace EventManagement.Models.ModelsDto.EventDtos
         public string Description { get; set; }
         public IFormFile? File { get; set; }
         public string Location { get; set; }
-
+        public string Coordinates { get; set; }
         [Required]
         public string Status { get; set; }
         [Required]

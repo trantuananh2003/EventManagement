@@ -43,11 +43,18 @@ namespace EventManagement.Data.Queries
                     EventName = eventGroup.Event.NameEvent,
                     UrlImage = eventGroup.Event.UrlImage,
                     Location = eventGroup.Event.Location,
+                    Coordinates = eventGroup.Event.Coordinates,
                     Description = eventGroup.Event.Description,
                     Status = eventGroup.Event.Status,
                     Privacy = eventGroup.Event.Privacy,
                     NameOrganization = _db.Organizations.Where(o => o.IdOrganization == eventGroup.Event.OrganizationId)
                                         .Select(o => o.NameOrganization)
+                                        .FirstOrDefault(),
+                    UrlImageOrganization = _db.Organizations.Where(o => o.IdOrganization == eventGroup.Event.OrganizationId)
+                                        .Select(o => o.UrlImage)
+                                        .FirstOrDefault(),
+                    OrganizationId = _db.Organizations.Where(o => o.IdOrganization == eventGroup.Event.OrganizationId)
+                                        .Select(o => o.IdOrganization)
                                         .FirstOrDefault(),
                     Tickets = eventGroup.Tickets.Select(ticket => new TicketTimeViewDto
                     {

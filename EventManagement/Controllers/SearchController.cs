@@ -4,6 +4,7 @@ using EventManagement.Models;
 using EventManagement.Service;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Text.Json;
 
 namespace EventManagement.Controllers
 {
@@ -19,15 +20,24 @@ namespace EventManagement.Controllers
             _searchService = searchService;
             _eventService = eventService;
             _apiResponse = new ApiResponse();
-        }
+        }   
 
         //Get list event for home page
         [HttpGet]
-        public async Task<ActionResult<ApiResponse>> GetListHomeEvent()
+        public async Task<ActionResult<ApiResponse>> GetListHomeEvent(DateTime fromDate, DateTime toDate,string searchString = "")
         {
-            var listHomeEvent = await _searchService.GetListHomeEvent("");
+            var pagedListHomeEvent = await _searchService.GetListHomeEvent("", fromDate, toDate, 1,3);
 
-            _apiResponse.Result = listHomeEvent;
+            Pagination pagination = new Pagination()
+            {
+                CurrentPage = pagedListHomeEvent.CurrentPage,
+                PageSize = pagedListHomeEvent.PageSize,
+                TotalRecords = pagedListHomeEvent.TotalCount,
+            };
+
+            Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pagedListHomeEvent));
+
+            _apiResponse.Result = pagedListHomeEvent.Items;
             _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);

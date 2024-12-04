@@ -1,7 +1,6 @@
 ﻿
 using EventManagement.Data.DataConnect;
 using EventManagement.Data.Models;
-using EventManagement.Data.Models.ModelDto;
 using EventManagement.Data.Queries.ModelDto;
 using EventManagement.Data.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
