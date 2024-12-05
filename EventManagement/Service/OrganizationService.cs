@@ -51,6 +51,7 @@ namespace EventManagement.Service
             var modelOrganization = _mapper.Map<Organization>(modelRequest);
             modelOrganization.IdOrganization = Guid.NewGuid().ToString();
             await _dbOrganization.CreateAsync(modelOrganization);
+            await AddMember(modelRequest.IdUserOwner, modelOrganization.IdOrganization);
             await _dbOrganization.SaveAsync();
         }
 
@@ -134,7 +135,7 @@ namespace EventManagement.Service
                 _serviceResult.Message.Add("Already user in your");
                 return _serviceResult;
             }
-
+            
             await _dbMemberOrganization.CreateAsync(new MemberOrganization
             {
                 MemberId = Guid.NewGuid().ToString(),

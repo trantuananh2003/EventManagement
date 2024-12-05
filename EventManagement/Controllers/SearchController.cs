@@ -24,9 +24,9 @@ namespace EventManagement.Controllers
 
         //Get list event for home page
         [HttpGet]
-        public async Task<ActionResult<ApiResponse>> GetListHomeEvent(DateTime fromDate, DateTime toDate,string searchString = "")
+        public async Task<ActionResult<ApiResponse>> GetListHomeEvent(DateTime fromDate, DateTime toDate,string searchString)
         {
-            var pagedListHomeEvent = await _searchService.GetListHomeEvent("", fromDate, toDate, 1,3);
+            var pagedListHomeEvent = await _searchService.GetListHomeEvent(searchString, fromDate, toDate, 1,10);
 
             Pagination pagination = new Pagination()
             {
@@ -47,6 +47,7 @@ namespace EventManagement.Controllers
         public async Task<ActionResult<ApiResponse>> GetEventDetail([FromRoute] string idEvent)
         {
             var entity = await _eventService.GetEventById(idEvent);
+
             if (entity.Privacy == EPrivacy.Private.ToString())
             {
                 _apiResponse.Result = SD.Privacy_Private;

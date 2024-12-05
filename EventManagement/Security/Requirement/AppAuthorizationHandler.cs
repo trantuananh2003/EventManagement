@@ -53,11 +53,21 @@ namespace EventManagement.Security.Requirement
                 return false;
             }
 
-            #region Query get claim from User in Organization
+            #region Check Owner Organization
+            var ownerOrganization = _dbContext.Organizations.Where(x => x.IdUserOwner == appUser.Id).FirstOrDefault();
+            if(ownerOrganization.IdOrganization == idOrganization)
+            {
+                return true;
+            }
+
+            #endregion
+
+            #region Check claim of user
             //get claim of user in organization
             var roleUserQuery = _dbContext.UserRoles.Where(ur => ur.UserId == appUser.Id); //Table UserRoles
             var roleOrganization = _dbContext.Roles.Where(r => r.OrganizationId == idOrganization); //Table Roles
-                                                                                                  
+                                      
+            //Lay het role cua user trong organization
             var roleUserInOrganization = from x in roleUserQuery
                                          join y in roleOrganization
                                          on x.RoleId equals y.Id into roleGroup
@@ -68,8 +78,8 @@ namespace EventManagement.Security.Requirement
                                              UserId = x.UserId,
                                              RoleId = x.RoleId,
                                          };
-            var test = roleUserInOrganization.FirstOrDefault();
-            // Lấy danh sách ClaimUser với LeftJoin
+            //var test = roleUserInOrganization.FirstOrDefault();
+            // Lấy danh sách ClaimUser với LeftJo
             var allClaimUserInO = from roleUser in roleUserInOrganization
                                   join roleClaim in _dbContext.RoleClaims
                                   on roleUser.RoleId equals roleClaim.RoleId into claimGroup
@@ -82,17 +92,20 @@ namespace EventManagement.Security.Requirement
                                       ClaimType = claim.ClaimType, // Sử dụng null-safe operator
                                       ClaimValue = claim.ClaimValue, // Tránh NullReferenceException
                                   };
-            #endregion
 
             //Handle list claim
-            var listClaimTask = allClaimUserInO.FirstOrDefaultAsync();
+            var listClaimTask = allClaimUserInO.ToListAsync();
             listClaimTask.Wait();
 
-            var Claim = listClaimTask.Result;
-            if (requirementItem.ClaimValue != Claim.ClaimValue || requirementItem.ClaimType != Claim.ClaimType)
-                return false;
+            foreach(var claim in listClaimTask.Result)
+            {
+                if (requirementItem.ClaimValue == claim.ClaimValue && requirementItem.ClaimType == claim.ClaimType)
+                    return true;
+            }
 
-            return true;
+            return false;
+            #endregion
+
         }
     }
 }

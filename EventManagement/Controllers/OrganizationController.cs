@@ -1,4 +1,5 @@
 ﻿using Azure;
+using EventManagement.Common;
 using EventManagement.Models;
 using EventManagement.Models.ModelsDto.OrganizationDtos;
 using EventManagement.Service;

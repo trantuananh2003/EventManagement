@@ -37,14 +37,15 @@ namespace EventManagement.Controllers
         }
 
         #region ManageRole
-        [HttpGet("roles")]
+        [HttpGet("roles")] //Lấy toàn bộ role lên theo organization
         public async Task<ActionResult<ApiResponse>> GetAllRole([FromQuery] string organizationId)
         {
             _apiResponse.Result = await _roleManager.Roles.Where(r => r.OrganizationId == organizationId).ToListAsync();
             _apiResponse.StatusCode = HttpStatusCode.OK;
             return Ok(_apiResponse);
         }
-        [HttpGet("role/{roleId}")]
+
+        [HttpGet("role/{roleId}")] //Lấy chi tiết về role đó
         public async Task<ActionResult<ApiResponse>> GetDetailRole([FromRoute] string roleId)
         {
             var role = await _roleManager.FindByIdAsync(roleId);
@@ -70,17 +71,19 @@ namespace EventManagement.Controllers
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);
         }
-        [HttpPost("role")]
+
+        [HttpPost("role")] //Thêm role vào
         public async Task<ActionResult<ApiResponse>> AddRoleByOrganization([FromBody] RoleCreateDto roleCreateDto)
         {
             if (!ModelState.IsValid)
             {
-                _apiResponse.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
                 _apiResponse.IsSuccess = false;
                 _apiResponse.ErrorMessages = ModelState
                     .Where(ms => ms.Value.Errors.Any())
                     .Select(ms => $"[{ms.Key}] : {ms.Value.Errors.FirstOrDefault()?.ErrorMessage}")
                     .ToList();
+               
                 return BadRequest(_apiResponse);
             }
 
@@ -99,6 +102,7 @@ namespace EventManagement.Controllers
                 return BadRequest(_apiResponse);
             }
 
+            //Thêm claim vào role
             foreach (var claim in roleCreateDto.ClaimValues)
             {
                 var resultAddRole = await _roleManager.AddClaimAsync(role, new Claim(SD_Role_Permission.Organization_ClaimType, claim));
@@ -114,7 +118,8 @@ namespace EventManagement.Controllers
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);
         }
-        [HttpPut("role/{roleId}")]
+
+        [HttpPut("role/{roleId}")] //Cập nhập role
         public async Task<ActionResult<ApiResponse>> UpdateRoleDetail([FromRoute] string roleId, [FromBody] RoleUpdateDto modelUpdate)
         {
             var role = await _roleManager.FindByIdAsync(roleId);
@@ -153,7 +158,8 @@ namespace EventManagement.Controllers
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);
         }
-        [HttpDelete("role/{roleId}")]
+
+        [HttpDelete("role/{roleId}")] //Xóa role
         public async Task<ActionResult<ApiResponse>> DeleteRole([FromRoute] string roleId)
         {
             var role = await _roleManager.FindByIdAsync(roleId);
@@ -171,7 +177,8 @@ namespace EventManagement.Controllers
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);
         }
-        [HttpGet("o-permissions")]
+
+        [HttpGet("o-permissions")] //Lấy toàn bộ quyền hạn của một tổ chức có thể làm
         public ActionResult<ApiResponse> GetAllOrganizationPermission()
         {
             // Lấy tất cả các hằng số từ lớp SD_Role_Permission
@@ -229,6 +236,7 @@ namespace EventManagement.Controllers
                 return Ok(_apiResponse);
             }
         }
+
         [HttpDelete("member")]
         public async Task<ActionResult<ApiResponse>> KickMember([FromQuery] string memberId)
         {
@@ -243,8 +251,9 @@ namespace EventManagement.Controllers
         #endregion
 
         #region ManageUserRole
-        [HttpGet("user-roles")]
-        public async Task<ActionResult<ApiResponse>> GetUserRoles([FromQuery] string userId)
+        [HttpGet("user-roles")] //Lay toàn bộ role của user
+        public async Task<ActionResult<ApiResponse>> GetUserRoles([FromQuery] string userId,
+            [FromQuery] string organizationId)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
@@ -265,7 +274,7 @@ namespace EventManagement.Controllers
             });
         }
 
-        [HttpPost("user-roles")] 
+        [HttpPost("user-roles")]  //Thêm role cho user
         public async Task<ActionResult<ApiResponse>> AddRoleUser([FromBody] RoleUserCreateDto roleUserCreateDto)
         {
             var user = await _userManager.FindByIdAsync(roleUserCreateDto.IdUser);

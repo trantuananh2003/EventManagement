@@ -14,6 +14,7 @@ namespace EventManagement.Middleware.Identity
             Services.AddScoped<IEventDateRepository, EventDateRepository>();
             Services.AddScoped<ITicketRepository, TicketRepository>();
             Services.AddScoped<ISearchQuery, SearchQuery>();
+            Services.AddScoped<IReportEvent, ReportEvent>();
             Services.AddScoped<IEventDetailViewQuery, EventDetailViewQuery>();
             Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
             Services.AddScoped<IOrderHeaderRepository, OrderHeaderRepository>();
