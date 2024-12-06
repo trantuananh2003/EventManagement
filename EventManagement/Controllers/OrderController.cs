@@ -4,6 +4,7 @@ using EventManagement.Models;
 using EventManagement.Models.ModelsDto.OrderHeaderDtos;
 using EventManagement.Service;
 using Microsoft.AspNetCore.Mvc;
+using Stripe;
 using System.Net;
 using System.Text.Json;
 
@@ -15,11 +16,15 @@ namespace EventManagement.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IPurchasedTicketService _purchasedTicketService;
+        private readonly IConfiguration _congifuration;
         private readonly ApiResponse _apiResponse;
 
-        public OrderController(IOrderService orderService, IPurchasedTicketService purchasedTicketService) {
+        public OrderController(IOrderService orderService, 
+            IPurchasedTicketService purchasedTicketService,
+            IConfiguration configuration) {
             _orderService = orderService;
             _purchasedTicketService = purchasedTicketService;
+            _congifuration = configuration;
             _apiResponse = new ApiResponse();
         }
 
@@ -107,29 +112,64 @@ namespace EventManagement.Controllers
         [HttpPost("[controller]")]
         public async Task<ActionResult<ApiResponse>> CreateOrder([FromBody] OrderHeaderCreateDto model)
         {
-            var result = await _orderService.CreateOrder(model);
+            var orderResult = await _orderService.CreateOrder(model);
 
-            if(result == EOrderCreate.OutOfStock)
+
+            if(orderResult.eOrderCreate == EOrderCreate.OutOfStock)
             {
                 _apiResponse.IsSuccess = false;
                 _apiResponse.ErrorMessages.Add(EOrderCreate.OutOfStock.ToString());
                 _apiResponse.StatusCode = HttpStatusCode.OK;
                 return Ok(_apiResponse);
             }
-            else if(result == EOrderCreate.NotFoundItem )
+            else if(orderResult.eOrderCreate == EOrderCreate.NotFoundItem )
             {
                 _apiResponse.ErrorMessages.Add(EOrderCreate.NotFoundItem.ToString());
                 _apiResponse.IsSuccess = false;
                 _apiResponse.StatusCode = HttpStatusCode.NotFound;
                 return NotFound(_apiResponse);
             }
+            //Tạo hóa đơn thành công
             else
             {
+                StripeConfiguration.ApiKey = _congifuration["StripeSettings:SecretKey"];
+                PaymentIntentCreateOptions options = new()
+                {
+                    Amount = (int)(orderResult.totalPrice * 100),
+                    Currency = "usd",
+                    PaymentMethodTypes = new List<string>
+                      {
+                        "card",
+                      },
+                };
+                PaymentIntentService service = new();
+                PaymentIntent response = service.Create(options);
+                OrderConfirmDto orderConfirm = new OrderConfirmDto();
+                orderConfirm.StripePaymentIntentId = response.Id;
+                orderConfirm.ClientSecret = response.ClientSecret;
+                orderConfirm.OrderHeaderId = orderResult.orderHeaderId;
+                orderConfirm.TotalPrice = orderResult.totalPrice;
+
+                _apiResponse.Result = orderConfirm;
                 _apiResponse.IsSuccess = true;
                 _apiResponse.StatusCode = HttpStatusCode.Created;
                 return Ok(_apiResponse);
             }
         }
 
+        [HttpPut("confirm/[controller]/{orderHeaderId}")]
+        public async Task<ActionResult<ApiResponse>> ConfirmOrder([FromRoute]string orderHeaderId, 
+            [FromBody]OrderDataConfirm orderData)
+        {
+            var result = await _orderService.ConfirmOrderHeaderById(orderHeaderId, orderData.StripePaymentIntentId, orderData.Status);
+                _apiResponse.Result = result.ToString();
+            if (result == EStatusOrder.Successful)
+            {
+                _apiResponse.IsSuccess = true;
+                return Ok(_apiResponse);
+            }
+            _apiResponse.IsSuccess = false;
+            return BadRequest(_apiResponse);
+        }
     }
 }

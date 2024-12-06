@@ -15,7 +15,6 @@ namespace EventManagement.Data.Queries
         Task<int> GetTotalOrderAsync(string eventId);
     }
 
-
     public class ReportEvent : IReportEvent
     {
         private readonly ApplicationDbContext _db;

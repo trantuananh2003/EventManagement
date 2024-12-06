@@ -4,6 +4,7 @@ using EventManagement.Data.Models;
 using EventManagement.Data.Queries.ModelDto;
 using EventManagement.Data.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using System.Collections;
 using System.Threading.Tasks.Dataflow;
 
@@ -89,6 +90,16 @@ namespace EventManagement.Data.Repository
 
             var total = await modelQuery.CountAsync();
             return (result, total);
+        }
+
+        public async Task UpdateStatusOrderHeader(string orderHeaderId, string stripePaymentIntentId, string status)
+        {
+            var entity = await GetAsync(x => x.IdOrderHeader == orderHeaderId, tracked: true);
+            if(entity != null)
+            {
+                entity.Status = status;
+                entity.StripePaymentIntentId = stripePaymentIntentId;
+            }
         }
     }
 }

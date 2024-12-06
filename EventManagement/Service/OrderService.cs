@@ -11,13 +11,21 @@ using System.Net;
 
 namespace EventManagement.Service
 {
+    public class OrderResult
+    {
+        public EOrderCreate eOrderCreate;
+        public int totalPrice;
+        public string orderHeaderId;
+    }
+
     public interface IOrderService
     {
         Task<(List<OverviewOrderDto>, int)> GetAllOrderByIdUser(string userId, string searchString, int pageSize, int pageNumber);
         Task<(List<AdminOrderOverviewDto>, int)> GetAllOrderByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber);
         Task<OrderHeaderDto> GetOrderHeaderById(string idOrderHeader);
         Task<List<OrderDetailDto>> GetOrderDetailDto(string orderHeader);
-        Task<EOrderCreate> CreateOrder(OrderHeaderCreateDto model);
+        Task<OrderResult> CreateOrder(OrderHeaderCreateDto model);
+        Task<EStatusOrder> ConfirmOrderHeaderById(string orderHeaderId,string stripaymentIntentId, string status);
     }
 
     public class OrderService : IOrderService
@@ -57,8 +65,9 @@ namespace EventManagement.Service
             var orderDto = _mapper.Map<List<OverviewOrderDto>>(listOrderFromData);
             return (orderDto, totalRow);
         }
-        public async Task<EOrderCreate> CreateOrder(OrderHeaderCreateDto model)
+        public async Task<OrderResult> CreateOrder(OrderHeaderCreateDto model)
         {
+            OrderResult orderResult = new OrderResult();
             using (var transaction = _dbOrderHeader.BeginTransaction())
             {
                 try
@@ -67,7 +76,7 @@ namespace EventManagement.Service
                     var orderHeader = _mapper.Map<OrderHeader>(model);
                     orderHeader.IdOrderHeader = Guid.NewGuid().ToString();
                     orderHeader.OrderDetails = null;
-                    orderHeader.Status = "Success";
+                    orderHeader.Status = EStatusOrder.Pending.ToString();
                     orderHeader.OrderDate = DateTime.Now;
                     orderHeader.TotalItem = 0;
 
@@ -85,7 +94,8 @@ namespace EventManagement.Service
                         if (ticketEntity == null)
                         {
                             transaction.Rollback();
-                            return EOrderCreate.NotFoundItem;
+                            orderResult.eOrderCreate = EOrderCreate.NotFoundItem;
+                            return (orderResult);
                         }
 
                         // Cập nhật số lượng vé
@@ -99,7 +109,8 @@ namespace EventManagement.Service
                             || ticketEntity.SaleMethod == ESaleMethodTicket.OnSite.ToString())
                         {
                             transaction.Rollback();
-                            return EOrderCreate.OutOfStock;
+                            orderResult.eOrderCreate = EOrderCreate.OutOfStock;
+                            return (orderResult);
                         }
 
                         // Tạo chi tiết đơn hàng
@@ -130,7 +141,10 @@ namespace EventManagement.Service
                     await _dbOrderHeader.SaveAsync();
                     transaction.Commit();
 
-                    return EOrderCreate.Done;
+                    orderResult.eOrderCreate = EOrderCreate.Done;
+                    orderResult.totalPrice = orderHeader.PriceTotal;
+                    orderResult.orderHeaderId = orderHeader.IdOrderHeader;
+                    return orderResult;
                 }
                 catch (Exception ex)
                 {
@@ -161,6 +175,36 @@ namespace EventManagement.Service
             var orderHeaderEntity = await _dbOrderHeader.GetAsync(x => x.IdOrderHeader == idOrderHeader, includeProperties: "User");
             var orderHeaderDto = _mapper.Map<OrderHeaderDto>(orderHeaderEntity);
             return orderHeaderDto;
+        }
+    
+        public async Task<EStatusOrder> ConfirmOrderHeaderById(string orderHeaderId,string stripePaymentIntentId, string status)
+        {
+            EStatusOrder result = EStatusOrder.Fail;
+            if(status == EStatusOrder.Successful.ToString())
+            {
+                await _dbOrderHeader.UpdateStatusOrderHeader(orderHeaderId, stripePaymentIntentId,
+                    EStatusOrder.Successful.ToString());
+                await _dbOrderDetail.SaveAsync();
+                result = EStatusOrder.Successful;
+            }
+            else
+            {
+                await _dbOrderHeader.UpdateStatusOrderHeader(orderHeaderId, stripePaymentIntentId,
+                    EStatusOrder.Fail.ToString());
+                await _dbOrderDetail.SaveAsync();
+                result = EStatusOrder.Fail;
+            }
+            return result;
+        }
+
+        public async Task BackTicket(string orderHeaderId)
+        {
+            var listOrderDetail = await _dbOrderDetail.GetAllAsync(x => x.OrderHeaderId == orderHeaderId);
+            foreach (var orderDetail in listOrderDetail)
+            {
+                var ticket = await _dbTicket.GetAsync(x => x.IdTicket == orderDetail.TicketId, tracked: true);
+                ticket.Quantity += orderDetail.Quantity;
+            }
         }
     }
 }

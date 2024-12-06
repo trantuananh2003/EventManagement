@@ -91,6 +91,7 @@ namespace EventManagement.Controllers
         [Authorize(Policy = "AddEventPolicy")]
         public async Task<ActionResult<ApiResponse>> Post([FromForm] EventCreateDto model)
         {
+            //validate
             if (!ModelState.IsValid)
             {
                 _apiResponse.StatusCode = HttpStatusCode.BadRequest;

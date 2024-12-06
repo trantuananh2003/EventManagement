@@ -63,5 +63,6 @@ namespace EventManagement.Controllers
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);
         }
+
     }
 }

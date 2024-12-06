@@ -33,6 +33,7 @@ namespace EventManagement.Data.Queries
                         from t in ticketGroup.DefaultIfEmpty() // Nếu không có vé, vẫn lấy sự kiện
                         where ed.ScheduledDate.Date >= fromDate.Date && ed.ScheduledDate.Date <= toDate.Date
                               && (string.IsNullOrEmpty(searchString) || e.NameEvent.Contains(searchString))
+                              || (string.IsNullOrEmpty(searchString) || e.Location.Contains(searchString))
                         group new { e, ed, t } by e.IdEvent into g // Nhóm chỉ dựa trên IdEvent
                         select new HomeEventDto
                         {

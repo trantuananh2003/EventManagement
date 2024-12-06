@@ -18,11 +18,11 @@ namespace EventManagement.Data.Repository.IRepository
             , string? includeProperties = null
             , int pageSize = 0, int pageNumber = 1);
         IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, int pageSize = 3, int pageNumber = 1);
+        Task<List<T>> GetAllWithIQueryAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IQueryable<T>>? includes = null);
         Task CreateAsync(T entity);
         void Remove(T entity);
         void RemoveRange(List<T> listEntity);
         Task SaveAsync();
         IDbContextTransaction BeginTransaction();
-        Task<List<T>> GetAllWithIQueryAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IQueryable<T>>? includes = null);
     }
 }
