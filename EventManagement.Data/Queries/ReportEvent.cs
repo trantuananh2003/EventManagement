@@ -1,4 +1,5 @@
 ﻿using EventManagement.Data.DataConnect;
+using EventManagement.Data.Helpers;
 using EventManagement.Data.Queries.ModelDto;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,6 +14,7 @@ namespace EventManagement.Data.Queries
     {
         Task<List<TicketStatisticDto>> GetTicketStatisticsAsync(string eventId);
         Task<int> GetTotalOrderAsync(string eventId);
+        Task<PagedList<EventPaymentSummary>> GetTotalPaymentEvent(string searchString,int pageNumber, int pageSize);
     }
 
     public class ReportEvent : IReportEvent
@@ -66,5 +68,33 @@ namespace EventManagement.Data.Queries
         {
             return await _db.OrderHeaders.Where(x => x.EventId == eventId).CountAsync();
         }
+
+        public async Task<PagedList<EventPaymentSummary>> GetTotalPaymentEvent(string searchString, int pageNumber, int pageSize)
+        {
+            var query = _db.Events
+                .Include(e => e.Organization)
+                .AsQueryable(); // Chuyển đổi thành IQueryable để có thể điều chỉnh câu truy vấn
+
+            // Nếu searchString có giá trị, thêm điều kiện Where
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(x => x.NameEvent.Contains(searchString));
+            }
+
+            var result = query
+                .Select(e => new EventPaymentSummary
+                {
+                    IdEvent = e.IdEvent,
+                    NameEvent = e.NameEvent,
+                    UrlImage = e.UrlImage,
+                    OrganizationName = e.Organization.NameOrganization,
+                    TotalPayment = e.OrderHeaders
+                        .Where(o => o.Status == "Successful" && o.PriceTotal > 0)
+                        .Sum(o => o.PriceTotal)
+                });
+
+            return await PagedList<EventPaymentSummary>.ToPagedList(result, pageNumber, pageSize);
+        }
+
     }
 }

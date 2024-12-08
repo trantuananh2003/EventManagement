@@ -54,8 +54,6 @@ namespace EventManagement
             CreateMap<OrderHeader, OrderHeaderDto>().ForMember(dest => dest.OrderDate, opt =>
                     opt.MapFrom(src => src.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")));
             CreateMap<OrderDetail, OrderDetailDto>();
-            CreateMap<UserOrderOverviewDto, OverviewOrderDto>().ForMember(dest => dest.OrderDate, opt =>
-                    opt.MapFrom(src => src.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")));
 
             CreateMap<MemberOrganization, MemberOrganizationDto>().ReverseMap();
             CreateMap<ApplicationUser, UserOrganizationDto>().ReverseMap();

@@ -7,6 +7,7 @@ using EventManagement.Models.ModelsDto.Profile;
 using EventManagement.Service;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
@@ -58,12 +59,18 @@ namespace EventManagement.Controllers
                 return BadRequest(_response);
             }
 
-
             ApplicationUser userFromDb = _db.ApplicationUsers
                         .FirstOrDefault(u => u.UserName.ToLower() == model.Email.ToLower());
 
-            bool isValid = await _userManager.CheckPasswordAsync(userFromDb, model.Password);
+            if(userFromDb.LockoutEnabled)
+            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add("Your account is locked");
+                return BadRequest(_response);
+            }
 
+            bool isValid = await _userManager.CheckPasswordAsync(userFromDb, model.Password);
 
             if (isValid == false)
             {
@@ -306,5 +313,65 @@ namespace EventManagement.Controllers
                 return BadRequest(_response);
             }
         }
+
+        [HttpGet("users")]
+        public async Task<ActionResult<ApiResponse>> GetAllUser()
+        {
+            var users = await _userManager.Users.ToListAsync();
+
+            var result = users.Select(user => new
+            {
+                user.UrlImage,
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.LockoutEnabled,
+            });
+
+            _response.Result = result;
+            _response.StatusCode = HttpStatusCode.OK;
+            return Ok(_response);
+        }
+
+        [HttpPatch("lockout/user/{userId}")]
+        public async Task<ActionResult<ApiResponse>> ChangeLockoutUser([FromRoute] string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _response.IsSuccess = false;
+                _response.Result = "Người dùng không tồn tại.";
+                return NotFound(_response);
+            }
+
+            // Kiểm tra xem có cần khóa người dùng không
+            if (user.LockoutEnabled)
+            {
+                // Nếu đang khóa thì mở khóa
+                user.LockoutEnd = null;
+            }
+            else
+            {
+                // Nếu chưa khóa thì thiết lập LockoutEnd để khóa tài khoản
+                user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(1); // Khóa trong 1 năm
+            }
+
+            // Cập nhật trạng thái LockoutEnabled
+            user.LockoutEnabled = !user.LockoutEnabled;
+
+            // Cập nhật thông tin người dùng
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                _response.IsSuccess = false;
+                _response.Result = "Không thể cập nhật trạng thái khóa người dùng.";
+                return BadRequest(_response);
+            }
+
+            _response.IsSuccess = true;
+            _response.Result = user.LockoutEnabled ? "Người dùng đã bị khóa." : "Người dùng đã được mở khóa.";
+            return Ok(_response);
+        }
+
     }
 }

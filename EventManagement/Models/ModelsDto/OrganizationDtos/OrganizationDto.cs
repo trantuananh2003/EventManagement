@@ -8,5 +8,6 @@
         public string City { get; set; }
         public string Country { get; set; }
         public string UrlImage { get; set; }
+        public string Status { get; set; }
     }
 }

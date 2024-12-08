@@ -21,10 +21,6 @@ namespace EventManagement.Controllers
 
         // Lấy thông tin agenda dựa trên idAgenda
         [HttpGet("agenda/{idAgenda}", Name = "GetAgenda")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse>> Get(string idAgenda)
         {
             if (string.IsNullOrEmpty(idAgenda))

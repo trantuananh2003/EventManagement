@@ -6,5 +6,7 @@
         public string StripePaymentIntentId { get; set; }
         public string ClientSecret { get; set; }
         public int TotalPrice { get; set; }
+        public string NumberPhone { get; set; }
+        public string FullName { get; set; }
     }
 }

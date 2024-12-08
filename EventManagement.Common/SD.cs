@@ -19,8 +19,6 @@
         public const string SD_Storage_Containter = "eventmanagement";
 
         public const string SD_URL_LINK_RESETPASSWORD = "http://localhost:3000/reset-password";
-
-
     }
 
     public enum EPrivacy
@@ -58,8 +56,14 @@
     public enum EStatusOrder
     {
         Successful,
-        Cancel,
         Fail,
         Pending,
+    }
+
+    public enum EStatusOrganization
+    {
+        Pending,
+        Active,
+        Inactive,
     }
 }

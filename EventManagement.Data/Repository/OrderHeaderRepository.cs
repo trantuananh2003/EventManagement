@@ -1,5 +1,6 @@
 ﻿
 using EventManagement.Data.DataConnect;
+using EventManagement.Data.Helpers;
 using EventManagement.Data.Models;
 using EventManagement.Data.Queries.ModelDto;
 using EventManagement.Data.Repository.IRepository;
@@ -24,10 +25,11 @@ namespace EventManagement.Data.Repository
             _db.OrderHeaders.Update(entity);
         }
 
-        public IQueryable<UserOrderOverviewDto> GetUserOrders(string IdUser)
+        public async Task<PagedList<UserOrderOverviewDto>> GetUserOrders(string IdUser, string searchString,
+            string statusFilter, int pageSize, int pageNumber)
         {
-            var modelQuery = _db.OrderHeaders
-                .Where(oh => oh.UserId == IdUser) // Lọc theo UserId
+            var query = _db.OrderHeaders
+                .Where(oh => oh.UserId == IdUser)
                 .Join(
                     _db.Events,
                     oh => oh.EventId, // Khóa từ OrderHeaders
@@ -59,11 +61,26 @@ namespace EventManagement.Data.Repository
                     NameEvent = group.Key.NameEvent,
                     UrlImage = group.Key.UrlImage,
                     TotalPrice = group.Key.PriceTotal,
-                    OrderDate = group.Select(x => x.OrderDate).FirstOrDefault(),
+                    OrderDate = group.Select(x => x.OrderDate).FirstOrDefault().ToString("yyyy-MM-dd HH:mm:ss"),
+                    OrderTimeSort = group.Select(x => x.OrderDate).FirstOrDefault(),
                     Status = group.Select(x => x.Status).FirstOrDefault(),
                     TotalTicket = group.Sum(x => x.Quantity)
-                });
-            return modelQuery;
+                }).OrderByDescending(x => x.OrderTimeSort).AsQueryable();
+
+            // Lọc theo `searchString` nếu có
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(q => q.NameEvent.Contains(searchString));
+            }
+
+            // Lọc theo `statusFilter` nếu có
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                query = query.Where(q => q.Status.Contains(statusFilter));
+            }
+
+            var listModel = await PagedList<UserOrderOverviewDto>.ToPagedList(query, pageNumber, pageSize);
+            return listModel;
         }
 
         public async Task<(IEnumerable<AdminOrderOverviewDto>, int)> GetAdminOrders(string IdOrganization, string searchString,
@@ -101,5 +118,7 @@ namespace EventManagement.Data.Repository
                 entity.StripePaymentIntentId = stripePaymentIntentId;
             }
         }
+
+
     }
 }

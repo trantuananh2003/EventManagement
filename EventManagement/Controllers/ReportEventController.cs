@@ -2,6 +2,8 @@
 using EventManagement.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using System.Text.Json;
 
 namespace EventManagement.Controllers
 {
@@ -16,7 +18,7 @@ namespace EventManagement.Controllers
             _apiResponse = new ApiResponse();
         }
 
-        [HttpGet()]
+        [HttpGet("/GetTicketStatics")]
         public async Task<ActionResult<ApiResponse>> GetTicketStatics(string eventId)
         {
             var ticketStatistics = await _reportEvent.GetTicketStatisticsAsync(eventId);
@@ -30,6 +32,27 @@ namespace EventManagement.Controllers
 
             _apiResponse.Result = combinedReport;
             return Ok(_apiResponse);
+        }
+
+        [HttpGet("TotalPaymentEvents")]
+        public async Task<ActionResult<ApiResponse>> GetTotalPaymentEvent(string searchString,int pageNumber = 1, int pageSize = 5)
+        {
+            var pagedTotalPaymentEvent = await _reportEvent.GetTotalPaymentEvent(searchString, pageNumber, pageSize);
+
+            Pagination pagination = new Pagination()
+            {
+                CurrentPage = pagedTotalPaymentEvent.CurrentNumber,
+                PageSize = pagedTotalPaymentEvent.PageSize,
+                TotalRecords = pagedTotalPaymentEvent.TotalCount
+            };
+            Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pagination));
+
+            return Ok(new ApiResponse
+            {
+                Result = pagedTotalPaymentEvent,
+                StatusCode = HttpStatusCode.OK,
+                IsSuccess = true
+            });
         }
 
     }

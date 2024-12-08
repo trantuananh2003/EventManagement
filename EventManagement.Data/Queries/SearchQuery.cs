@@ -41,11 +41,10 @@ namespace EventManagement.Data.Queries
                             EventName = g.First().e.NameEvent, // Lấy thông tin từ một phần tử bất kỳ trong nhóm
                             UrlImage = g.First().e.UrlImage,
                             Location = g.First().e.Location,
-                            NearDate = g.Min(x => x.ed.ScheduledDate).ToString("dd-mm-yyyy"), // Ngày gần nhất
+                            NearDate = g.Min(x => x.ed.ScheduledDate).ToString("dd-MM-yyyy"), // Ngày gần nhất
                             PriceLow = g.Where(x => x.t != null).Min(x => (int?)x.t.Price) ?? 0, // Giá thấp nhất trong nhóm
                             PriceHigh = g.Where(x => x.t != null).Max(x => (int?)x.t.Price) ?? 0// Giá cao nhất trong nhóm
                         };
-
 
             // Trả về kết quả phân trang
             var homeEventDtos = await PagedList<HomeEventDto>.ToPagedList(query, pageNumber, pageSize);

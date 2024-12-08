@@ -13,7 +13,6 @@ namespace EventManagement.Service
         Task<PagedListDto<HomeEventDto>> GetListHomeEvent(
             string search, DateTime fromDate, DateTime toDate, int pageNumber, int pageSize);
         Task<ModelApi.EventDetailViewDto> GetEventDetail(string idEvent);
-
     }
 
     public class SearchService : ISearchService
@@ -32,7 +31,6 @@ namespace EventManagement.Service
         public async Task<PagedListDto<HomeEventDto>> GetListHomeEvent(
             string search, DateTime fromDate, DateTime toDate , int pageNumber, int pageSize)
         {
-            // Kiểm tra nếu từ ngày hoặc đến ngày là DateTime.MinValue, thay đổi chúng thành giá trị mặc định
             if (fromDate == DateTime.MinValue)
                 fromDate = DateTime.Now.Date; // Mặc định từ ngày hôm nay
 

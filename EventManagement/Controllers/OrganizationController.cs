@@ -1,5 +1,6 @@
 ﻿using Azure;
 using EventManagement.Common;
+using EventManagement.Data.Models;
 using EventManagement.Models;
 using EventManagement.Models.ModelsDto.OrganizationDtos;
 using EventManagement.Service;
@@ -111,10 +112,10 @@ namespace EventManagement.Controllers
             });
         }
 
-        [HttpGet("[controller]s")]
+        [HttpGet("user/[controller]s")]
         public async Task<ActionResult<ApiResponse>> GetAllByIdUser([FromQuery] string userId)
         {
-            if(string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
             {
                 return BadRequest(new ApiResponse
                 {
@@ -132,5 +133,32 @@ namespace EventManagement.Controllers
                 IsSuccess = true
             });
         }
+
+        [HttpGet("[controller]s")]
+        public async Task<ActionResult<ApiResponse>> GetAllOrganization()
+        {
+            var listOrganization = await _organizationService.GetAllOrganization();
+            return Ok(new ApiResponse
+            {
+                Result = listOrganization,
+                StatusCode = HttpStatusCode.OK,
+                IsSuccess = true
+            });
+        }
+
+        [HttpPatch("status/[controller]/{organizationId}")]
+        public async Task<ActionResult<ApiResponse>> ChangeStatus([FromRoute] string organizationId,[FromQuery] string status)
+        {
+            if (!Enum.IsDefined(typeof(EStatusOrganization), status))
+            {
+                _apiResponse.IsSuccess = false;
+                return BadRequest(_apiResponse);
+            }
+            await _organizationService.UpdateStatusOrganization(organizationId, status.ToString());
+
+            _apiResponse.IsSuccess = true;
+            return Ok(_apiResponse);
+        }
     }
 }
+    

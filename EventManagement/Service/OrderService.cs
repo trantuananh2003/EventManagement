@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using EventManagement.Common;
+using EventManagement.Data.Helpers;
 using EventManagement.Data.Models;
 using EventManagement.Data.Queries.ModelDto;
 using EventManagement.Data.Repository.IRepository;
 using EventManagement.Models;
 using EventManagement.Models.ModelsDto.OrderDetailDtos;
 using EventManagement.Models.ModelsDto.OrderHeaderDtos;
-using Microsoft.EntityFrameworkCore;
-using System.Net;
 
 namespace EventManagement.Service
 {
@@ -20,12 +19,14 @@ namespace EventManagement.Service
 
     public interface IOrderService
     {
-        Task<(List<OverviewOrderDto>, int)> GetAllOrderByIdUser(string userId, string searchString, int pageSize, int pageNumber);
+        Task<PagedList<UserOrderOverviewDto>> GetAllOrderByIdUser(string userId, 
+            string searchString,  string statusFilter,
+            int pageSize, int pageNumber);
         Task<(List<AdminOrderOverviewDto>, int)> GetAllOrderByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber);
         Task<OrderHeaderDto> GetOrderHeaderById(string idOrderHeader);
         Task<List<OrderDetailDto>> GetOrderDetailDto(string orderHeader);
         Task<OrderResult> CreateOrder(OrderHeaderCreateDto model);
-        Task<EStatusOrder> ConfirmOrderHeaderById(string orderHeaderId,string stripaymentIntentId, string status);
+        Task<EStatusOrder> UpdateStatusPaymentOrder(string orderHeaderId,string stripaymentIntentId, EStatusOrder status);
     }
 
     public class OrderService : IOrderService
@@ -46,24 +47,13 @@ namespace EventManagement.Service
             _purchasedTicketService = purchasedTicketService;
         }
 
-        public async Task<(List<OverviewOrderDto>, int)> GetAllOrderByIdUser(string userId, string searchString, int pageSize, int pageNumber)
+        public async Task<PagedList<UserOrderOverviewDto>> GetAllOrderByIdUser(string userId, 
+            string searchString, string statusFilter,
+            int pageSize, int pageNumber)
         {
-            var listOrderQuery = _dbOrderHeader.GetUserOrders(userId);
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                listOrderQuery = listOrderQuery.Where(x => x.NameEvent.ToLower().Contains(searchString.ToLower()));
-            }
-            var totalRow = await listOrderQuery.CountAsync();
-            if (pageSize > 0)
-            {
-                listOrderQuery = listOrderQuery
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize);
-            }
-            var listOrderFromData = await listOrderQuery.ToListAsync();
+            var pagedListOrder = await _dbOrderHeader.GetUserOrders(userId, searchString, statusFilter, pageSize, pageNumber);
 
-            var orderDto = _mapper.Map<List<OverviewOrderDto>>(listOrderFromData);
-            return (orderDto, totalRow);
+            return pagedListOrder;
         }
         public async Task<OrderResult> CreateOrder(OrderHeaderCreateDto model)
         {
@@ -122,7 +112,7 @@ namespace EventManagement.Service
 
                         // Cập nhật thông tin đơn hàng
                         orderHeader.TotalItem++;
-                        orderHeader.PriceTotal += orderDetail.Price;
+                        orderHeader.PriceTotal += orderDetail.Price * orderDetail.Quantity;
                         orderHeader.EventId = ticketEntity.EventId;
 
                         await _dbOrderDetail.CreateAsync(orderDetail);
@@ -149,7 +139,7 @@ namespace EventManagement.Service
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    throw; // Ghi log nếu cần thiết
+                    throw;
                 }
             }
         }
@@ -177,24 +167,12 @@ namespace EventManagement.Service
             return orderHeaderDto;
         }
     
-        public async Task<EStatusOrder> ConfirmOrderHeaderById(string orderHeaderId,string stripePaymentIntentId, string status)
+        public async Task<EStatusOrder> UpdateStatusPaymentOrder(string orderHeaderId,string stripePaymentIntentId, EStatusOrder status)
         {
-            EStatusOrder result = EStatusOrder.Fail;
-            if(status == EStatusOrder.Successful.ToString())
-            {
-                await _dbOrderHeader.UpdateStatusOrderHeader(orderHeaderId, stripePaymentIntentId,
-                    EStatusOrder.Successful.ToString());
-                await _dbOrderDetail.SaveAsync();
-                result = EStatusOrder.Successful;
-            }
-            else
-            {
-                await _dbOrderHeader.UpdateStatusOrderHeader(orderHeaderId, stripePaymentIntentId,
-                    EStatusOrder.Fail.ToString());
-                await _dbOrderDetail.SaveAsync();
-                result = EStatusOrder.Fail;
-            }
-            return result;
+            await _dbOrderHeader.UpdateStatusOrderHeader(orderHeaderId, stripePaymentIntentId,
+                status.ToString());
+            await _dbOrderDetail.SaveAsync();
+            return status;
         }
 
         public async Task BackTicket(string orderHeaderId)

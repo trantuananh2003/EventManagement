@@ -19,5 +19,6 @@ namespace EventManagement.Data.Models
         public string Privacy { get; set; } //Public || Private
         public string Status { get; set; } //OnSale || SoldOut || Cancelled || Postponted
         public string EventType { get; set; } //Multiple || One
+        public IEnumerable<OrderHeader> OrderHeaders { get; set; }
     }
 }

@@ -19,6 +19,8 @@ namespace EventManagement.Service
         Task<OrganizationDto> GetOrganizationById(string id);
         Task<OrganizationDto> GetOrganizationByIdUser(string idUserOwner);
         Task<List<OrganizationDto>> GetJoinedOrganizationsByIdUser(string userId);
+        Task<List<OrganizationDto>> GetAllOrganization();
+        Task UpdateStatusOrganization(string organizationId, string status);
 
         Task<ServiceResult> AddMember(string emailUser, string idOrganization);
         Task<PagedListDto<MemberOrganizationDto>> GetAllMemberByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber);
@@ -153,6 +155,20 @@ namespace EventManagement.Service
             var entity = await _dbMemberOrganization.GetAsync(o => o.MemberId == memberId);
             _dbMemberOrganization.Remove(entity);
             await _dbMemberOrganization.SaveAsync();
+        }
+
+        public async Task<List<OrganizationDto>> GetAllOrganization()
+        {
+            var listOrganizaiton = await _dbOrganization.GetAllAsync();
+            var listOrganizationDto = _mapper.Map<List<OrganizationDto>>(listOrganizaiton);
+            return listOrganizationDto;
+        }
+
+        public async Task UpdateStatusOrganization(string organizationId, string status)
+        {
+            var entity = await _dbOrganization.GetAsync(x => x.IdOrganization == organizationId, tracked: true);
+            entity.Status = status;
+            await _dbOrganization.SaveAsync();
         }
         #endregion
     }
