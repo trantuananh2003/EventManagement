@@ -16,6 +16,8 @@ namespace EventManagement.Common
         public const string ReportEvent_ClaimValue = "ViewReportEvent";
         public const string SupportChat_ClaimValue = "SupportChat";
         public const string EditPurchasedTicket_ClaimValue = "EditPurchasedTicket";
+        public const string ManageMember_ClaimValue = "ManageMember";
+        public const string ManageRole_ClaimValue = "ManageRole";
 
         //Admin
         public const string Admin_ClaimType = "Admin";

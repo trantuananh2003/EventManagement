@@ -53,8 +53,9 @@ namespace EventManagement.Service
             var modelOrganization = _mapper.Map<Organization>(modelRequest);
             modelOrganization.IdOrganization = Guid.NewGuid().ToString();
             await _dbOrganization.CreateAsync(modelOrganization);
-            await AddMember(modelRequest.IdUserOwner, modelOrganization.IdOrganization);
             await _dbOrganization.SaveAsync();
+            var userEntity = await _userManager.FindByIdAsync(modelRequest.IdUserOwner);
+            await AddMember(userEntity.Email, modelOrganization.IdOrganization);
         }
 
         public async Task UpdateOrganization(OrganizationUpdateDto modelUpdateDto)

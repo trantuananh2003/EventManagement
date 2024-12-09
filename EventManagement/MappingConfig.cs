@@ -67,6 +67,8 @@ namespace EventManagement
             CreateMap<ModelApi.EventDetailViewDto, ModelData.EventDetailViewDto>().ReverseMap();
             CreateMap< ModelData.TicketTimeViewDto, ModelApi.TicketTimeViewDto>().ForMember(dest => dest.ScheduledDate, opt =>
                     opt.MapFrom(src => src.ScheduledDate.ToString("yyyy-MM-dd")));
+            CreateMap<ModelData.EventDateViewDto, ModelApi.EventDateViewDto>().ForMember(dest => dest.ScheduledDate, opt =>
+                    opt.MapFrom(src => src.ScheduledDate.ToString("yyyy-MM-dd")));
 
             CreateMap<PurchasedTicketDto, PurchasedTicket>().ReverseMap();
             CreateMap<PurchasedTicketUpdateDto, PurchasedTicket>().ReverseMap();

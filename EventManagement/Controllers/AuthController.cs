@@ -62,6 +62,14 @@ namespace EventManagement.Controllers
             ApplicationUser userFromDb = _db.ApplicationUsers
                         .FirstOrDefault(u => u.UserName.ToLower() == model.Email.ToLower());
 
+            if(userFromDb == null)
+            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add("Account does not exist");
+                return BadRequest(_response);
+            }
+
             if(userFromDb.LockoutEnabled)
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;
@@ -126,8 +134,7 @@ namespace EventManagement.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
         {
-            ApplicationUser userFromDb = _db.ApplicationUsers
-                .FirstOrDefault(u => u.Email.ToLower() == model.Email.ToLower());
+            ApplicationUser userFromDb = await _userManager.FindByEmailAsync(model.Email);
 
             if (userFromDb != null)
             {
@@ -137,7 +144,7 @@ namespace EventManagement.Controllers
                 return BadRequest(_response);
             }
 
-            ApplicationUser newUser = new()
+            ApplicationUser newUser = new ApplicationUser
             {
                 UserName = model.Email,
                 Email = model.Email,
@@ -149,18 +156,6 @@ namespace EventManagement.Controllers
                 var result = await _userManager.CreateAsync(newUser, model.Password);
                 if (result.Succeeded)
                 {
-                    //Check role
-                    if (!_roleManager.RoleExistsAsync(SD.Role_Customer).GetAwaiter().GetResult())
-                    {
-                        //create roles in database
-                        //await _roleManager.CreateAsync(new ApplicationRolenew);
-                    }
-
-                    //if (model.Role.ToLower() == SD.Role_Customer)
-                    //{
-                    await _userManager.AddToRoleAsync(newUser, SD.Role_Customer);
-                    //}
-
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.IsSuccess = true;
                     return Ok(_response);
@@ -173,6 +168,7 @@ namespace EventManagement.Controllers
                 _response.ErrorMessages.Add("Error From Server");
                 return BadRequest(_response);
             }
+
             _response.StatusCode = HttpStatusCode.BadRequest;
             _response.IsSuccess = false;
             _response.ErrorMessages.Add("Error while registering");

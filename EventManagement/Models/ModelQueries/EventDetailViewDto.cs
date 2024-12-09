@@ -15,12 +15,18 @@
         public string Privacy { get; set; }
         public string EventType { get; set; }
         public List<TicketTimeViewDto> Tickets { get; set; }
-
+        public List<EventDateViewDto> EventDates { get; set; }
     }
 
     public class TicketTimeViewDto
     {
         public string NameTicket { get; set; }  //from Model Ticket
         public string ScheduledDate { get; set; } //from Model EventDate
+    }
+
+    public class EventDateViewDto
+    {
+        public string DateTitle { get; set; }
+        public string ScheduledDate { get; set; }
     }
 }

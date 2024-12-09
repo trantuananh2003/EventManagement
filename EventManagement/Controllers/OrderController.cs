@@ -182,7 +182,7 @@ namespace EventManagement.Controllers
                 var paymentIntent = await service.GetAsync(order.StripePaymentIntentId);
 
                 // Kiểm tra trạng thái của PaymentIntent
-                if (paymentIntent.Status == "requires_payment_method")
+                if (!(paymentIntent.Status == "requires_payment_method"))
                 {
                     _apiResponse.IsSuccess = false;
                     _apiResponse.ErrorMessages.Add("Payment failed. Please provide a new payment method.");

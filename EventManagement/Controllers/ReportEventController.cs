@@ -18,7 +18,7 @@ namespace EventManagement.Controllers
             _apiResponse = new ApiResponse();
         }
 
-        [HttpGet("/GetTicketStatics")]
+        [HttpGet("GetTicketStatics")]
         public async Task<ActionResult<ApiResponse>> GetTicketStatics(string eventId)
         {
             var ticketStatistics = await _reportEvent.GetTicketStatisticsAsync(eventId);

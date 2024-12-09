@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EventManagement.Data.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,12 +22,18 @@ namespace EventManagement.Data.Queries.ModelDto
         public string Privacy { get; set; }
         public string EventType { get; set; }
         public List<TicketTimeViewDto> Tickets { get; set; }
-
+        public List<EventDateViewDto> EventDates {get;set;}
     }
 
     public class TicketTimeViewDto
     {
         public string NameTicket { get; set; }  //from Model Ticket
         public DateTime ScheduledDate { get; set; } //from Model EventDate
+    }
+
+    public class EventDateViewDto
+    {
+        public string DateTitle { get; set; }
+        public DateTime ScheduledDate { get; set; }
     }
 }

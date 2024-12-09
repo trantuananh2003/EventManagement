@@ -49,6 +49,9 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 1;
     options.Password.RequireNonAlphanumeric = false;
+    options.Lockout.AllowedForNewUsers = false; // Tắt lockout cho người dùng mới
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(0); // Không giới hạn thời gian khóa
+    options.Lockout.MaxFailedAccessAttempts = int.MaxValue; // Không giới hạn số lần thử
 
 });
 builder.Services.AddControllers(option => option.Filters.Add<CustomExceptionFilter>()).AddNewtonsoftJson(options =>
