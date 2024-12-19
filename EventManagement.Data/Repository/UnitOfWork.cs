@@ -20,6 +20,7 @@ namespace EventManagement.Data.Repository
         private IPurchasedTicketRepository _purchasedTicketRepository;
         private IEventRepository _eventRepository;
         private IEventDateRepository _eventDateRepository;
+        private IOrganizationRepository _organizationRepository;
 
         public UnitOfWork(ApplicationDbContext dbContext, IDapperHelper dapper)
         {
@@ -33,6 +34,7 @@ namespace EventManagement.Data.Repository
         public IPurchasedTicketRepository PurchasedTicketRepository => _purchasedTicketRepository ??= new PurchasedTicketRepository(_dbContext);
         public IEventRepository EventRepository => _eventRepository ??= new EventRepository(_dbContext, _dapper);
         public IEventDateRepository EventDateRepository => _eventDateRepository ??= new EventDateRepository(_dbContext);
+        public IOrganizationRepository OrganizationRepository => _organizationRepository ??= new OrganizationRepository(_dbContext);
 
         public async Task SaveAsync()
         {

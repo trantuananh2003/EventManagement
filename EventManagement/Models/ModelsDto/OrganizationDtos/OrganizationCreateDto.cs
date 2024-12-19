@@ -9,6 +9,7 @@ namespace EventManagement.Models.ModelsDto.OrganizationDtos
         [Required]
         public string NameOrganization { get; set; }
         public string Description { get; set; }
+        [Required]
         public string City { get; set; }
         public string Country { get; set; }
         public IFormFile? File { get; set; }

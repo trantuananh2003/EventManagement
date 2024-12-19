@@ -54,7 +54,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpPost("[controller]")]
-        public async Task<ActionResult<ApiResponse>> Post([FromBody] OrganizationCreateDto model)
+        public async Task<ActionResult<ApiResponse>> CreateOrganization([FromBody] OrganizationCreateDto model)
         {
             await _organizationService.CreateOrganization(model);
 

@@ -14,7 +14,7 @@ namespace EventManagement.Data.Repository.IRepository
         IPurchasedTicketRepository PurchasedTicketRepository { get; }
         IEventRepository EventRepository { get; }
         IEventDateRepository EventDateRepository { get; }
-        
+        IOrganizationRepository OrganizationRepository { get; }
 
         Task SaveAsync();
     }
