@@ -76,18 +76,6 @@ namespace EventManagement.Controllers
         [HttpPost("role")] //Thêm role vào
         public async Task<ActionResult<ApiResponse>> AddRoleByOrganization([FromBody] RoleCreateDto roleCreateDto)
         {
-            if (!ModelState.IsValid)
-            {
-                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
-                _apiResponse.IsSuccess = false;
-                _apiResponse.ErrorMessages = ModelState
-                    .Where(ms => ms.Value.Errors.Any())
-                    .Select(ms => $"[{ms.Key}] : {ms.Value.Errors.FirstOrDefault()?.ErrorMessage}")
-                    .ToList();
-               
-                return BadRequest(_apiResponse);
-            }
-
             ApplicationRole role = new ApplicationRole
             {
                 Name = roleCreateDto.NameRole,

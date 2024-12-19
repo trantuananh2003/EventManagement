@@ -23,6 +23,11 @@ namespace EventManagement.Middleware.AuthorizationSetUp
                 {
                     policy.Requirements.Add(new OrganizationPermissionRequirement("Organization", SD_Role_Permission.ViewReportEvent_ClaimValue));
                 });
+                opts.AddPolicy(SD_Role_Permission.ManageOrderOverView, policy =>
+                {
+                    policy.Requirements.Add(new OrganizationPermissionRequirement("Organization", SD_Role_Permission.ManageOrderOverView));
+                });
+
 
                 //Suport chat
                 opts.AddPolicy(SD_Role_Permission.SupportChat_ClaimValue, policy =>

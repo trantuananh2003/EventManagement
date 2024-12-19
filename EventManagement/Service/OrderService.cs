@@ -130,7 +130,7 @@ namespace EventManagement.Service
         public async Task<(List<AdminOrderOverviewDto>, int)> GetAllOrderByIdOrganization(string idOrganization, string searchString,
                int pageSize=0, int pageNumber=1)
         {
-            var (listOrder, total) = await _unitOfWork.OrderHeaderRepository.GetAdminOrders(idOrganization, searchString, pageSize, pageNumber);
+            var (listOrder, total) = await _unitOfWork.OrderHeaderRepository.GetOrdersForOrganization(idOrganization, searchString, pageSize, pageNumber);
 
             var orderDto = _mapper.Map<List<AdminOrderOverviewDto>>(listOrder);
             return (orderDto, total);

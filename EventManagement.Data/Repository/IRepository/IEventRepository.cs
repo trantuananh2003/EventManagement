@@ -1,4 +1,6 @@
-﻿using EventManagement.Data.Models;
+﻿using EventManagement.Data.Helpers;
+using EventManagement.Data.Models;
+using EventManagement.Data.Queries.ModelDto;
 
 namespace EventManagement.Data.Repository.IRepository
 {
@@ -9,6 +11,12 @@ namespace EventManagement.Data.Repository.IRepository
             string searchString, bool isUpComing, string status, 
             int pageSize, int pageIndex);
 
+        Task<(IEnumerable<T>, int)> GetListHomeEvent<T>(
+            string searchString, string fromDate, string toDate,
+            int pageNumber, int pageSize);
 
+        //Task<PagedList<HomeEventDto>> GetListHomeEvent(
+        //    string searchString, DateTime fromDate, DateTime toDate,
+        //    int pageNumber, int pageSize);
     }
 }

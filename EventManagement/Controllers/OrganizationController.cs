@@ -69,7 +69,7 @@ namespace EventManagement.Controllers
         [Authorize(Policy = SD_Role_Permission.ManageOrganization_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> Put([FromRoute] string userId, [FromForm] OrganizationUpdateDto modelUpdateDto)
         {
-            if (modelUpdateDto == null || !ModelState.IsValid)
+            if (modelUpdateDto == null )
             {
                 return BadRequest(new ApiResponse
                 {

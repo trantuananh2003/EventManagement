@@ -1,5 +1,6 @@
 ﻿using Azure.Storage.Blobs.Models;
 using EventManagement.Common;
+using EventManagement.Data.Repository.IRepository;
 using EventManagement.Models;
 using EventManagement.Service;
 using Microsoft.AspNetCore.Mvc;

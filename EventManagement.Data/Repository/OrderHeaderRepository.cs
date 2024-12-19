@@ -83,12 +83,13 @@ namespace EventManagement.Data.Repository
             return listModel;
         }
 
-        public async Task<(IEnumerable<AdminOrderOverviewDto>, int)> GetAdminOrders(string IdOrganization, string searchString,
+        public async Task<(IEnumerable<AdminOrderOverviewDto>, int)> GetOrdersForOrganization(string IdOrganization, string searchString,
             int pageSize = 0, int pageNumber = 1)
         {
             var modelQuery = from e in _db.Events
                              where e.OrganizationId == IdOrganization
                              join oh in _db.OrderHeaders on e.IdEvent equals oh.EventId
+                             orderby oh.OrderDate descending
                              select new AdminOrderOverviewDto
                              {
                                  IdOrderHeader = oh.IdOrderHeader,
@@ -98,6 +99,12 @@ namespace EventManagement.Data.Repository
                                  Status = oh.Status,
                                  TotalPrice = oh.PriceTotal
                              };
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                modelQuery = modelQuery.Where(q => q.NameEvent.Contains(searchString) || q.IdOrderHeader.Contains(searchString));
+            }
+
             IEnumerable<AdminOrderOverviewDto> result = null;
 
             if (pageSize > 0)

@@ -28,7 +28,6 @@ namespace EventManagement.Data.Configuration
             Services.AddScoped<IAgendaRepository, AgendaRepository>();
             Services.AddScoped<IEventDateRepository, EventDateRepository>();
             Services.AddScoped<ITicketRepository, TicketRepository>();
-            Services.AddScoped<ISearchQuery, SearchQuery>();
             Services.AddScoped<IReportEvent, ReportEvent>();
             Services.AddScoped<IEventDetailViewQuery, EventDetailViewQuery>();
             Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();

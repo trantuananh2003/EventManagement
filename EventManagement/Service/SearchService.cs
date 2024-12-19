@@ -2,6 +2,7 @@
 using EventManagement.Data.Helpers;
 using EventManagement.Data.Queries;
 using EventManagement.Data.Queries.ModelDto;
+using EventManagement.Data.Repository.IRepository;
 using EventManagement.Models;
 using ModelApi = EventManagement.Models.ModelQueries;
 
@@ -17,19 +18,19 @@ namespace EventManagement.Service
 
     public class SearchService : ISearchService
     {
-        private readonly ISearchQuery _searchQuery;
         private readonly IEventDetailViewQuery _eventDetailViewQuery;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public SearchService(IMapper mapper, ISearchQuery searchQuery, IEventDetailViewQuery eventDetailViewQuery)
+        public SearchService(IMapper mapper, IUnitOfWork unitOfWork, IEventDetailViewQuery eventDetailViewQuery)
         {
-            _searchQuery = searchQuery;
+            _unitOfWork = unitOfWork;
             _eventDetailViewQuery = eventDetailViewQuery;
             _mapper = mapper;
         }
 
         public async Task<PagedListDto<HomeEventDto>> GetListHomeEvent(
-            string search, DateTime fromDate, DateTime toDate , int pageNumber, int pageSize)
+            string search, DateTime fromDate, DateTime toDate, int pageNumber, int pageSize)
         {
             if (fromDate == DateTime.MinValue)
                 fromDate = DateTime.Now.Date; // Mặc định từ ngày hôm nay
@@ -37,13 +38,16 @@ namespace EventManagement.Service
             if (toDate == DateTime.MinValue)
                 toDate = DateTime.Now.AddMonths(6).Date; // Mặc định đến hết 6 tháng sau
 
-            var pagedHomeEvent = await _searchQuery.GetListHomeEvent(search, fromDate, toDate ,pageNumber, pageSize);
+            var stringFromDate = fromDate.ToString("yyyy-MM-dd");
+            var stringToDate = toDate.ToString("yyyy-MM-dd");
+
+            var (result, totalRecord) = await _unitOfWork.EventRepository.GetListHomeEvent<HomeEventDto>(search, stringFromDate, stringToDate, pageNumber, pageSize);
             PagedListDto<HomeEventDto> pagedHomeEventDto = new PagedListDto<HomeEventDto>
             {
-                PageSize = pagedHomeEvent.PageSize,
-                CurrentPage = pagedHomeEvent.CurrentNumber,
-                Items = pagedHomeEvent,
-                TotalCount = pagedHomeEvent.TotalCount,
+                PageSize = pageSize,
+                CurrentPage = pageNumber,
+                Items = result,
+                TotalCount = totalRecord,
             };
             return pagedHomeEventDto;
         }
