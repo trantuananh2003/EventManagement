@@ -15,10 +15,8 @@ namespace EventManagement.Data.DataConnect
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<ApplicationRole> ApplicationRoles { get; set; }
-        public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<Event> Events { get; set; }
-        public DbSet<OverviewEvent> OverviewEvents { get; set; }
         public DbSet<Agenda> Agendas { get; set; }
         public DbSet<EventDate> EventDates { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
@@ -28,8 +26,10 @@ namespace EventManagement.Data.DataConnect
         public DbSet<PurchasedTicket> PurchasedTickets { get; set; }
         public DbSet<SupportChatRoom> SupportChatRooms { get; set; }
         public DbSet<Message> Messages { get; set; }
-        public DbSet<Tag> Tags { get; set; }
-        public DbSet<EventTag> EventTags { get; set; }
+        public DbSet<Tag> Tags { get; set; } //Chua dung toi
+        public DbSet<EventTag> EventTags { get; set; } //Chua dung toi
+        public DbSet<OverviewEvent> OverviewEvents { get; set; } //Chua dung toi
+        public DbSet<RefreshToken> RefreshTokens { get; set; } // Chua dung toi
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

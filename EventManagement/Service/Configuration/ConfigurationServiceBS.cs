@@ -1,13 +1,11 @@
-﻿using EventManagement.Security.Requirement;
-using Microsoft.AspNetCore.Authorization;
-using EventManagement.Service;
-using EventManagement.Data.Models;
+﻿using EventManagement.Models;
+using EventManagement.Service.OutService;
 
-namespace EventManagement.Middleware.Identity
+namespace EventManagement.Service.Configuration
 {
-    public static class ServiceSetUpMiddleware
+    public static class ConfigurationServiceBS
     {
-        public static IServiceCollection AddServiceSetUp(this IServiceCollection Services)
+        public static void RegisterDIBussiness(this IServiceCollection Services)
         {
             Services.AddSingleton<IBlobService, BlobService>();
             Services.AddScoped<IOrganizationService, OrganizationService>();
@@ -19,8 +17,14 @@ namespace EventManagement.Middleware.Identity
             Services.AddScoped<IOrderService, OrderService>();
             Services.AddScoped<IPurchasedTicketService, PurchasedTicketService>();
             Services.AddScoped<ISupportChatService, SupportChatService>();
-
-            return Services;
         }
+
+        public static void RegisterMailService(this IServiceCollection services, IConfiguration configuration)
+        {
+            var mailSettings = configuration.GetSection("MailSettings");
+            services.Configure<MailSettings>(mailSettings);
+            services.AddTransient<SendMailService>();
+        }
+
     }
 }

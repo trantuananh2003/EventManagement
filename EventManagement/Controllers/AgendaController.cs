@@ -47,9 +47,6 @@ namespace EventManagement.Controllers
 
         // Tạo mới agenda
         [HttpPost("agenda")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse>> Post([FromBody] AgendaCreateDto model)
         {
             if (!ModelState.IsValid)
@@ -72,10 +69,6 @@ namespace EventManagement.Controllers
 
         // Cập nhật thông tin agenda
         [HttpPut("agenda")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse>> Put([FromBody] AgendaUpdateDto model)
         {
             if (model == null || string.IsNullOrEmpty(model.IdAgenda) || !ModelState.IsValid)
@@ -100,5 +93,6 @@ namespace EventManagement.Controllers
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);
         }
+
     }
 }

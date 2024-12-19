@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+﻿using MailKit.Security;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 using System.Net;
 
 namespace EventManagement.Middleware
 {
+    //Tự custom 1 hàm bắt lỗi
     public class CustomExceptionMiddleware
     {
         private readonly RequestDelegate _requestDelegate;
@@ -18,6 +20,7 @@ namespace EventManagement.Middleware
         {
             try
             {
+                //Đây là hàm thực thi request khi có lỗi
                 await _requestDelegate(context);
             }
             catch (Exception ex)
@@ -28,31 +31,38 @@ namespace EventManagement.Middleware
 
         private async Task ProcessException(HttpContext context, Exception ex)
         {
-            Console.WriteLine("In Custom Middleware");
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "application/json";
             if (ex is BadImageFormatException badImageFormatException)
             {
                 await context.Response.WriteAsync(JsonConvert.SerializeObject(new
                 {
-                    statusCode = 776,
-                    ErrorMessage = "Hello, From Custom Exception Handler",
+                    statusCode = 400,
+                    ErrorMessage = "Invalid image format",
                 }));
             }
             else if (ex is UnauthorizedAccessException unauthorizedAccessException)
             {
                 await context.Response.WriteAsync(JsonConvert.SerializeObject(new
                 {
+                    statusCode = 403,
+                    ErrorMessage = "You don't have Permission",
+                }));
+            }
+            else if (ex is AuthenticationException authenticationException)
+            {
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                {
                     statusCode = 401,
-                    ErrorMessage = "Hello, From Custom Exception Handler",
+                    ErrorMessage = "You need login",
                 }));
             }
             else if (ex is SqlException sqlException)
             {
                 await context.Response.WriteAsync(JsonConvert.SerializeObject(new
                 {
-                    statusCode = 776,
-                    ErrorMessage = "Hello, From Custom Exception Handler",
+                    statusCode = 500,
+                    ErrorMessage = "An unexpected error occurred." + ex,
                 }));
             }
             else

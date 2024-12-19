@@ -39,6 +39,7 @@ namespace EventManagement.Service
                 Status = "Pending"
             };
             await _dbPurchasedTicket.CreateAsync(purchasedTicket);
+            await _dbPurchasedTicket.SaveAsync();
         }
 
         public async Task<PagedListDto<PurchasedTicketDto>> GetAllPurchasedTicket(string idOrderHeader, string searchString, string status, int pageSize = 0, int pageNumber = 1)

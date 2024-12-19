@@ -4,7 +4,7 @@ using EventManagement.Data.Models;
 using EventManagement.Models;
 using EventManagement.Models.ModelsDto;
 using EventManagement.Models.ModelsDto.Profile;
-using EventManagement.Service;
+using EventManagement.Service.OutService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -199,7 +199,6 @@ namespace EventManagement.Controllers
             //    $"Please reset your password by <a href='{callbackUrl}'>clicking here</a>.");
             
             await _sendMailService.SendMail(new MailContent { To = email, Body = $"<a href='{callBackUrl}'>clicking here</a>.", Subject="Đổi mật khẩu" });
-
 
             _response.StatusCode = HttpStatusCode.OK;
             _response.IsSuccess = true;

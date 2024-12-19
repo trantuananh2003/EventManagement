@@ -4,6 +4,7 @@ using EventManagement.Data.Models;
 using EventManagement.Models;
 using EventManagement.Models.ModelsDto.OrderHeaderDtos;
 using EventManagement.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
@@ -30,7 +31,6 @@ namespace EventManagement.Controllers
             _apiResponse = new ApiResponse();
         }
 
-        
         [HttpGet("[controller]Detail")]
         public async Task<ActionResult<ApiResponse>> GetOrderDetail([FromQuery] string idOrderHeader)
         {
@@ -75,7 +75,7 @@ namespace EventManagement.Controllers
                 return NotFound(_apiResponse);
             }
 
-            Pagination pagination = new Pagination
+            PaginationDto pagination = new PaginationDto
             {
                 TotalRecords = pagedList.TotalCount,
                 PageSize = pagedList.PageSize,
@@ -91,12 +91,13 @@ namespace EventManagement.Controllers
 
         //Lay thong tin order len cho to chuc
         [HttpGet("organization/{idOrganization}/[controller]s")]
+        [Authorize(Policy = SD_Role_Permission.ManageOrderOverView)]
         public async Task<ActionResult<ApiResponse>> GetAllOrderByIdOrganization([FromRoute] string idOrganization,
             string searchString, int pageSize = 0, int pageNumber = 1)
         {
             var (listResult, totalRow) = await _orderService.GetAllOrderByIdOrganization(idOrganization, searchString, pageSize, pageNumber);
 
-            Pagination pagination = new Pagination
+            PaginationDto pagination = new PaginationDto
             {
                 TotalRecords = totalRow,
                 PageSize = pageSize,
@@ -143,6 +144,7 @@ namespace EventManagement.Controllers
                         "card",
                       },
                 };
+
                 PaymentIntentService service = new();
                 PaymentIntent response = service.Create(options);
                 OrderConfirmDto orderConfirm = new OrderConfirmDto();
@@ -158,6 +160,30 @@ namespace EventManagement.Controllers
                 _apiResponse.StatusCode = HttpStatusCode.Created;
                 return Ok(_apiResponse);
             }
+        }
+
+        [HttpPut("confirm/[controller]/{orderHeaderId}")]
+        public async Task<ActionResult<ApiResponse>> UpdateStatusOrder([FromRoute]string orderHeaderId, 
+            [FromBody]OrderDataConfirm orderData)
+        {
+            if(!Enum.TryParse(orderData.Status, out EStatusOrder statusOrder))
+            {
+                _apiResponse.IsSuccess = false;
+                _apiResponse.ErrorMessages.Add("Fail to Update Status Order");
+                return BadRequest(_apiResponse);
+            }
+            
+            var result = await _orderService.UpdateStatusPaymentOrder(orderHeaderId, orderData.StripePaymentIntentId, statusOrder);
+                _apiResponse.Result = result.ToString();
+
+            if (result == EStatusOrder.Successful)
+            {
+                _apiResponse.IsSuccess = true;
+                return Ok(_apiResponse);
+            }
+
+            _apiResponse.IsSuccess = false;
+            return BadRequest(_apiResponse);
         }
 
         [HttpPost("retrieve-intent/{orderId}")]
@@ -216,30 +242,6 @@ namespace EventManagement.Controllers
                 _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
                 return StatusCode(500, _apiResponse);
             }
-        }
-
-        [HttpPut("confirm/[controller]/{orderHeaderId}")]
-        public async Task<ActionResult<ApiResponse>> UpdateStatusOrder([FromRoute]string orderHeaderId, 
-            [FromBody]OrderDataConfirm orderData)
-        {
-            if(!Enum.TryParse(orderData.Status, out EStatusOrder statusOrder))
-            {
-                _apiResponse.IsSuccess = false;
-                _apiResponse.ErrorMessages.Add("Fail to Update Status Order");
-                return BadRequest(_apiResponse);
-            }
-            
-            var result = await _orderService.UpdateStatusPaymentOrder(orderHeaderId, orderData.StripePaymentIntentId, statusOrder);
-                _apiResponse.Result = result.ToString();
-
-            if (result == EStatusOrder.Successful)
-            {
-                _apiResponse.IsSuccess = true;
-                return Ok(_apiResponse);
-            }
-
-            _apiResponse.IsSuccess = false;
-            return BadRequest(_apiResponse);
         }
     }
 }

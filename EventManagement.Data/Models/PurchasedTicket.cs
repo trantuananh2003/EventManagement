@@ -8,6 +8,7 @@ namespace EventManagement.Data.Models
 {
     public class PurchasedTicket
     {
+
         public string IdPurchasedTicket { get; set; }
         public string OrderDetailId { get; set; }
         public OrderDetail OrderDetail { get; set; }

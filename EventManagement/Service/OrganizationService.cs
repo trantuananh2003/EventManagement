@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
-using Azure.Storage.Blobs.Models;
 using EventManagement.Common;
 using EventManagement.Data.Models;
 using EventManagement.Data.Repository.IRepository;
 using EventManagement.Models;
 using EventManagement.Models.ModelsDto;
-using EventManagement.Models.ModelsDto.EventDtos;
 using EventManagement.Models.ModelsDto.OrganizationDtos;
+using EventManagement.Service.OutService;
 using Microsoft.AspNetCore.Identity;
 
 namespace EventManagement.Service
@@ -15,13 +14,11 @@ namespace EventManagement.Service
     {
         Task CreateOrganization(OrganizationCreateDto modelRequest);
         Task UpdateOrganization(OrganizationUpdateDto modelRequest);
-
         Task<OrganizationDto> GetOrganizationById(string id);
         Task<OrganizationDto> GetOrganizationByIdUser(string idUserOwner);
         Task<List<OrganizationDto>> GetJoinedOrganizationsByIdUser(string userId);
         Task<List<OrganizationDto>> GetAllOrganization();
         Task UpdateStatusOrganization(string organizationId, string status);
-
         Task<ServiceResult> AddMember(string emailUser, string idOrganization);
         Task<PagedListDto<MemberOrganizationDto>> GetAllMemberByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber);
         Task KickMember(string memberId);
@@ -52,8 +49,10 @@ namespace EventManagement.Service
         {
             var modelOrganization = _mapper.Map<Organization>(modelRequest);
             modelOrganization.IdOrganization = Guid.NewGuid().ToString();
+
             await _dbOrganization.CreateAsync(modelOrganization);
             await _dbOrganization.SaveAsync();
+
             var userEntity = await _userManager.FindByIdAsync(modelRequest.IdUserOwner);
             await AddMember(userEntity.Email, modelOrganization.IdOrganization);
         }
@@ -91,6 +90,7 @@ namespace EventManagement.Service
             var organizationReponse = _mapper.Map<OrganizationDto>(organizationEntity);
             return organizationReponse;
         }
+
         public async Task<List<OrganizationDto>> GetJoinedOrganizationsByIdUser(string userId)
         {
             var listMemberOrganization = await _dbMemberOrganization.GetAllAsync(o => o.IdUser == userId, includeProperties: "Organization");
@@ -112,7 +112,6 @@ namespace EventManagement.Service
                     pageSize: pageSize,
                     pageNumber: pageNumber);
 
-
             var modelListDto = _mapper.Map<List<MemberOrganizationDto>>(pagedMemberOrganization);
             var pagedEventDto = new PagedListDto<MemberOrganizationDto>()
             {
@@ -129,23 +128,30 @@ namespace EventManagement.Service
         public async Task<ServiceResult> AddMember(string emailUser, string idOrganization)
         {
             var userEntity = await _userManager.FindByEmailAsync(emailUser);
+
+            if(userEntity == null)
+            {
+                _serviceResult.IsSuccess = false;
+            }
+
             var entity = await _dbMemberOrganization.GetAsync(x => x.IdOrganization == idOrganization && x.IdUser == userEntity.Id);
 
             //Kiem tra trung thanh vien
             if(entity != null) //Co thanh vien
             {
                 _serviceResult.IsSuccess = false;
-                _serviceResult.Message.Add("Already user in your");
+                _serviceResult.Message.Add("Already user in your organization");
                 return _serviceResult;
             }
             
-            await _dbMemberOrganization.CreateAsync(new MemberOrganization
-            {
-                MemberId = Guid.NewGuid().ToString(),
-                IdOrganization = idOrganization,
-                IdUser = _userManager.FindByEmailAsync(emailUser).Result.Id
-            });
-            await _dbMemberOrganization.SaveAsync();
+             await _dbMemberOrganization.CreateAsync(new MemberOrganization
+                                                    {
+                                                        MemberId = Guid.NewGuid().ToString(),
+                                                        IdOrganization = idOrganization,
+                                                        IdUser = _userManager.FindByEmailAsync(emailUser).Result.Id
+                                                    });
+
+             await _dbMemberOrganization.SaveAsync();
 
             _serviceResult.IsSuccess = true;
             return _serviceResult;

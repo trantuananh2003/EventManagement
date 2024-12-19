@@ -1,5 +1,7 @@
-﻿using EventManagement.Models;
+﻿using EventManagement.App.Models.ModelsDto.EventDateDtos;
+using EventManagement.Models;
 using EventManagement.Models.ModelsDto.EventDateDtos;
+using EventManagement.Models.ModelsDto.EventDtos;
 using EventManagement.Service;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -7,7 +9,7 @@ using System.Net;
 namespace EventManagement.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/")]
     public class EventDateController : Controller
     {
         private readonly IEventDateService _eventDateService;
@@ -19,7 +21,7 @@ namespace EventManagement.Controllers
             _apiResponse = new ApiResponse();
         }
 
-        [HttpGet(Name = "GetAllEventDate")]
+        [HttpGet("[controller]s")]
         public async Task<ActionResult<ApiResponse>> GetAll([FromQuery]string idEvent)
         {
             if (string.IsNullOrEmpty(idEvent))
@@ -44,14 +46,55 @@ namespace EventManagement.Controllers
             return Ok(_apiResponse);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<ApiResponse>> Post([FromBody]EventDateCombineSaveDto eventDateCombine,[FromQuery] string idEvent)
+        [HttpPut("[controller]")]
+        public async Task<ActionResult<ApiResponse>> Post([FromBody] EventDateCombineSaveDto eventDateCombine, [FromQuery] string idEvent)
         {
+            if(await _eventDateService.CheckAlreadyExistTicketReference(eventDateCombine.ListEventDateDelete))
+            {
+                _apiResponse.StatusCode = HttpStatusCode.Conflict;
+                _apiResponse.ErrorMessages.Add("Already Ticket take EventDate");
+                _apiResponse.IsSuccess = false;
+                return Conflict(_apiResponse);
+            }
+
             await _eventDateService.SaveAllEventDate(eventDateCombine.ListEventDateDto, eventDateCombine.ListEventDateDelete, idEvent);
 
             _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.IsSuccess = true;
             return Ok(_apiResponse);
         }
+
+        #region unupdate
+
+        [HttpPost("[controller]")]
+        public async Task<ActionResult<ApiResponse>> Post([FromBody] EventDateCreateDto modelCreateDto,[FromQuery] string idEvent)
+        {
+            await _eventDateService.CreateEventDate(modelCreateDto, idEvent);
+
+            _apiResponse.StatusCode = HttpStatusCode.OK;
+            _apiResponse.IsSuccess = true;
+            return Ok(_apiResponse);
+        }
+
+        [HttpPut("[controller]/{eventDateId}")]
+        public async Task<ActionResult<ApiResponse>> Put([FromBody] EventDateUpdateDto modelUpdateDto, [FromRoute] string eventDateId)
+        {
+            await _eventDateService.UpdateEventDate(modelUpdateDto, eventDateId);
+
+            _apiResponse.StatusCode = HttpStatusCode.OK;
+            _apiResponse.IsSuccess = true;
+            return Ok(_apiResponse);
+        }
+
+        [HttpDelete("[controller]/{idEventDate}")]
+        public async Task<ActionResult<ApiResponse>> Delete([FromRoute] string idEventDate)
+        {
+            await _eventDateService.RemoveEventDate(idEventDate);
+
+            _apiResponse.StatusCode = HttpStatusCode.OK;
+            _apiResponse.IsSuccess = true;
+            return Ok(_apiResponse);
+        }
+        #endregion
     }
 }

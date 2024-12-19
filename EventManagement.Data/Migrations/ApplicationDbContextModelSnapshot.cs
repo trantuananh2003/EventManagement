@@ -538,7 +538,6 @@ namespace EventManagement.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EventDateId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("EventId")
@@ -807,7 +806,7 @@ namespace EventManagement.Data.Migrations
             modelBuilder.Entity("EventManagement.Data.Models.OrderHeader", b =>
                 {
                     b.HasOne("EventManagement.Data.Models.Event", "Event")
-                        .WithMany()
+                        .WithMany("OrderHeaders")
                         .HasForeignKey("EventId");
 
                     b.HasOne("EventManagement.Data.Models.ApplicationUser", "User")
@@ -859,10 +858,9 @@ namespace EventManagement.Data.Migrations
             modelBuilder.Entity("EventManagement.Data.Models.Ticket", b =>
                 {
                     b.HasOne("EventManagement.Data.Models.EventDate", "EventDate")
-                        .WithMany()
+                        .WithMany("Tickets")
                         .HasForeignKey("EventDateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("EventManagement.Data.Models.Event", "Event")
                         .WithMany()
@@ -924,6 +922,16 @@ namespace EventManagement.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("EventManagement.Data.Models.Event", b =>
+                {
+                    b.Navigation("OrderHeaders");
+                });
+
+            modelBuilder.Entity("EventManagement.Data.Models.EventDate", b =>
+                {
+                    b.Navigation("Tickets");
                 });
 
             modelBuilder.Entity("EventManagement.Data.Models.OrderDetail", b =>

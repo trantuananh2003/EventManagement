@@ -18,18 +18,6 @@ namespace EventManagement.Data.Repository
             dbSet = _db.Set<T>();
         }
 
-        public async Task CreateAsync(T entity)
-        {
-            try
-            {
-                await dbSet.AddAsync(entity);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while creating the entity.", ex);
-            }
-        }
-
         public async Task<T> GetAsync(Expression<Func<T, bool>>? filter = null, bool tracked = false, string? includeProperties = null)
         {
             try
@@ -62,8 +50,7 @@ namespace EventManagement.Data.Repository
             }
         }
 
-        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null
-            ,int pageSize = 0, int pageNumber = 1)
+        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null)
         {
             try
             {
@@ -90,7 +77,8 @@ namespace EventManagement.Data.Repository
             }
         }
 
-        public async Task<PagedList<T>> GetPagedAllAsync(Expression<Func<T, bool>>? filter = null
+        public async Task<PagedList<T>> GetPagedAllAsync(
+            Expression<Func<T, bool>>? filter = null
             , List<(Expression<Func<T, object>> orderBy, bool isDescending)>? orderByList = null
             , string? includeProperties = null
             , int pageSize = 0, int pageNumber = 1)
@@ -141,54 +129,15 @@ namespace EventManagement.Data.Repository
             }
         }
 
-        public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, int pageSize = 3, int pageNumber = 1)
-        {
-            IQueryable<T> query = dbSet;
-
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
-            if (pageSize > 0)
-            {
-                if (pageSize > 100)
-                {
-                    pageSize = 100;
-                }
-                query = query.Skip(pageSize * (pageNumber - 1)).Take(pageSize);
-            }
-
-            if (includeProperties != null)
-            {
-                foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProp);
-                }
-            }
-
-            return query;
-        }
-
-        public async Task<List<T>> GetAllWithIQueryAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IQueryable<T>> includes = null)
+        public async Task CreateAsync(T entity)
         {
             try
             {
-                IQueryable<T> query = dbSet;
-
-                if (filter != null)
-                {
-                    query = query.Where(filter);
-                }
-
-                if (includes != null)
-                {
-                    query = includes(query);
-                }
-                return await query.ToListAsync();
+                await dbSet.AddAsync(entity);
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while getting all the entities.", ex);
+                throw new Exception("An error occurred while creating the entity.", ex);
             }
         }
 
@@ -228,10 +177,14 @@ namespace EventManagement.Data.Repository
             }
         }
 
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await dbSet.AnyAsync(predicate);
+        }
+
         public IDbContextTransaction BeginTransaction()
         {
             return _db.Database.BeginTransaction();
         }
-
     }
 }

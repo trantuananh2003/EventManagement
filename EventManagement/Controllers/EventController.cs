@@ -23,15 +23,8 @@ namespace EventManagement.Controllers
         }
 
         [HttpGet("[controller]/{idEvent}", Name = "GetEventById")]
-        public async Task<ActionResult<ApiResponse>> Get(string idEvent)
+        public async Task<ActionResult<ApiResponse>> Get([FromRoute] string idEvent)
         {
-            if (string.IsNullOrEmpty(idEvent))
-            {
-                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
-                _apiResponse.IsSuccess = false;
-                return BadRequest(_apiResponse);
-            }
-
             var eventResult = await _eventService.GetEventById(idEvent);
 
             if (eventResult == null)
@@ -49,7 +42,7 @@ namespace EventManagement.Controllers
 
         // Lấy thông tin event dựa trên idOrganization
         [HttpGet("[controller]s", Name = "GetAll")]
-        public async Task<ActionResult<ApiResponse>> GetAll([FromQuery] string idOrganization, string searchString, string statusEvent,
+        public async Task<ActionResult<ApiResponse>> GetAllPaged([FromQuery] string idOrganization, string searchString, string statusEvent,
             int pageSize = 0, int pageNumber = 1)
         {
             if(string.IsNullOrEmpty(idOrganization))
@@ -59,7 +52,7 @@ namespace EventManagement.Controllers
                 return BadRequest(_apiResponse);
             }
 
-            var pagedEvents = await _eventService.GetAllPagedEvent(idOrganization, searchString, statusEvent,pageSize, pageNumber);
+            var pagedEvents = await _eventService.GetAllPagedEvent(idOrganization, searchString, statusEvent, pageSize, pageNumber);
 
             if (pagedEvents.Items == null)
             {
@@ -68,14 +61,14 @@ namespace EventManagement.Controllers
                 return NotFound(_apiResponse);
             }
 
-            Pagination pagination = new Pagination()
+            PaginationDto pagination = new PaginationDto()
             {
                 CurrentPage = pagedEvents.CurrentPage,
                 PageSize = pagedEvents.PageSize,
                 TotalRecords = pagedEvents.TotalCount,
             };
 
-            Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pagination));
+             Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pagination));
 
             _apiResponse.Result = pagedEvents.Items;
             _apiResponse.StatusCode = HttpStatusCode.OK;
@@ -85,24 +78,9 @@ namespace EventManagement.Controllers
 
         // Tạo mới event
         [HttpPost("[controller]")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [Authorize(Policy = "AddEventPolicy")]
+        [Authorize(Policy = SD_Role_Permission.AddEvent_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> Post([FromForm] EventCreateDto model)
         {
-            //validate
-            if (!ModelState.IsValid)
-            {
-                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
-                _apiResponse.IsSuccess = false;
-                _apiResponse.ErrorMessages = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-                return BadRequest(_apiResponse);
-            }
-
             var eventDto = await _eventService.CreateEvent(model);
             _apiResponse.StatusCode = HttpStatusCode.Created;
             _apiResponse.IsSuccess = true;
@@ -113,17 +91,9 @@ namespace EventManagement.Controllers
 
         // Cập nhật thông tin event
         [HttpPut("[controller]/{idEvent}")]
+        [Authorize(Policy = SD_Role_Permission.UpdateEvent_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> Put([FromForm] EventUpdateDto model, [FromRoute] string idEvent)
         {
-            model.IdEvent = idEvent;
-            if (model == null || string.IsNullOrEmpty(model.IdEvent) || !ModelState.IsValid)
-            {
-                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
-                _apiResponse.IsSuccess = false;
-                _apiResponse.ErrorMessages = new List<string> { "Invalid event data." };
-                return BadRequest(_apiResponse);
-            }
-
             // Check Event exists
             var existingEvent = await _eventService.GetEventById(model.IdEvent);
             if (existingEvent == null)
@@ -139,7 +109,9 @@ namespace EventManagement.Controllers
             return Ok(_apiResponse);
         }
 
+        // Cập nhập chính sách cho event
         [HttpPut("[controller]/{idEvent}/privacy")]
+        [Authorize(Policy = SD_Role_Permission.UpdateEvent_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> SetPrivacyEventByID([FromRoute] string idEvent,
             [FromBody] string privacy)
         {

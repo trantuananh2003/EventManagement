@@ -7,7 +7,7 @@ namespace EventManagement.Models.ModelsDto.EventDateDtos
         public string IdEventDate { get; set; }
         public string EventId { get; set; }
         public string DateTitle { get; set; }
-        public string ScheduledDate { get; set; } // Change data type to string
+        public string ScheduledDate { get; set; } 
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
     }

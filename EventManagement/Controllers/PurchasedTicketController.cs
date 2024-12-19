@@ -42,7 +42,7 @@ namespace EventManagement.Controllers
                 return NotFound(_apiResponse);
             }
 
-            Pagination pagination = new Pagination()
+            PaginationDto pagination = new PaginationDto()
             {
                 CurrentPage = pagedModel.CurrentPage,
                 PageSize = pagedModel.PageSize,

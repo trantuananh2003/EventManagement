@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace EventManagement.Security.Requirement
+namespace EventManagement.Middleware.AuthorizationSetUp.Requirement
 {
     public class OrganizationPermissionRequirement : IAuthorizationRequirement
     {
@@ -8,8 +8,8 @@ namespace EventManagement.Security.Requirement
         public string ClaimValue { get; }
         public OrganizationPermissionRequirement(string claimType, string claimValue)
         {
-            this.ClaimType = claimType;
-            this.ClaimValue = claimValue;
+            ClaimType = claimType;
+            ClaimValue = claimValue;
         }
     }
 }

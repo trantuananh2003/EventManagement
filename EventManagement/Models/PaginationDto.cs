@@ -1,6 +1,7 @@
 ﻿namespace EventManagement.Models
 {
-    public class Pagination
+    //Object để phân trang
+    public class PaginationDto
     {
         public int CurrentPage { set; get; }
         public int PageSize { get; set; }

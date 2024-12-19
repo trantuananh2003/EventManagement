@@ -1,11 +1,12 @@
-﻿using EventManagement.Data.Models.ChatRoom;
+﻿using EventManagement.Common;
+using EventManagement.Data.Models.ChatRoom;
 using EventManagement.Hubs;
 using EventManagement.Models;
 using EventManagement.Models.SupportChatRoomDtos;
 using EventManagement.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace EventManagement.Controllers.SupportChatController
@@ -26,6 +27,7 @@ namespace EventManagement.Controllers.SupportChatController
         }
 
         [HttpGet("organization/{organizationId}/[Controller]s")]
+        [Authorize(Policy = SD_Role_Permission.SupportChat_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> GetAllChatRoomByOrganizationId([FromRoute]string organizationId)
         {
             var listDto = await _supportChatService.GetChatRoomsByOrganizationId(organizationId);
@@ -36,16 +38,6 @@ namespace EventManagement.Controllers.SupportChatController
             return Ok(_apiResponse);
         }
 
-        [HttpGet("user/{userId}/[Controller]s")]
-        public async Task<ActionResult<ApiResponse>> GetAllChatRoomByUserId([FromRoute] string userId)
-        {
-            var listDto = await _supportChatService.GetChatRoomsByUserId(userId);
-
-            _apiResponse.Result = listDto;
-            _apiResponse.IsSuccess = true;
-            _apiResponse.StatusCode = HttpStatusCode.OK;
-            return Ok(_apiResponse);
-        }
 
         [HttpGet("[controller]")]
         public async Task<ActionResult<ApiResponse>> GetChatRoomByOrganizationId([FromQuery] string organizationId,[FromQuery]string senderId)
@@ -64,6 +56,34 @@ namespace EventManagement.Controllers.SupportChatController
             return Ok(_apiResponse);
         }
 
+
+        [HttpGet("user/{userId}/[Controller]s")]
+        public async Task<ActionResult<ApiResponse>> GetAllChatRoomByUserId([FromRoute] string userId)
+        {
+            var listDto = await _supportChatService.GetChatRoomsByUserId(userId);
+
+            _apiResponse.Result = listDto;
+            _apiResponse.IsSuccess = true;
+            _apiResponse.StatusCode = HttpStatusCode.OK;
+            return Ok(_apiResponse);
+        }
+
+        [HttpGet("messages")]
+        public async Task<ActionResult<ApiResponse>> FetchMessage([FromQuery] string chatRoomId)
+        {
+            var listDto = await _supportChatService.GetMessages(chatRoomId);
+            _apiResponse.Result = listDto;
+            _apiResponse.IsSuccess = true;
+            return Ok(_apiResponse);
+        }
+
+        [HttpPatch("[Controller]/markread")]
+        public async Task<ActionResult<ApiResponse>> MarkAsRead(string roomId, bool isUser)
+        {
+            await _supportChatService.MarkRead(roomId, isUser);
+            return Ok(_apiResponse);
+        }
+
         [HttpPost("[Controller]")]
         public async Task<ActionResult<ApiResponse>> CreateSupportChatRoom([FromForm] SendCreateChatRoomDto sendCreateChatRoom)
         {
@@ -77,21 +97,6 @@ namespace EventManagement.Controllers.SupportChatController
         }
 
 
-        [HttpGet("messages")]
-        public async Task<ActionResult<ApiResponse>> FetchMessage([FromQuery] string chatRoomId)
-        {
-                var listDto = await _supportChatService.GetMessages(chatRoomId);
-            _apiResponse.Result = listDto;
-            _apiResponse.IsSuccess = true;
-            return Ok(_apiResponse);
-        }
-
-        [HttpPatch("[Controller]/markread")]
-        public async Task<ActionResult<ApiResponse>> MarkAsRead(string roomId, bool isUser)
-        {
-            await _supportChatService.MarkRead(roomId, isUser);
-            return Ok(_apiResponse);
-        }
 
     }
 }

@@ -1,13 +1,28 @@
-﻿using EventManagement.Data.Queries;
+﻿using EventManagement.Data.DataConnect;
+using EventManagement.Data.Queries;
 using EventManagement.Data.Repository.IRepository;
 using EventManagement.Data.Repository;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using EventManagement.Data.Dapper;
 
-namespace EventManagement.Middleware.Identity
+namespace EventManagement.Data.Configuration
 {
-    public static class RepositorySetUpMiddleware
+    public static class ConfigurationServiceDb
     {
-        public static IServiceCollection AddServiceSetUpReposiotry(this IServiceCollection Services)
+        public static void RegisterContextDb(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddDbContext<ApplicationDbContext>(option =>
+            {
+                option.UseSqlServer(configuration.GetConnectionString("DefaultSQLConnection"));
+            });
+        }
+
+        public static void RegisterDIRepository(this IServiceCollection Services)
+        {
+            Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
             Services.AddScoped<IEventRepository, EventRepository>();
             Services.AddScoped<IAgendaRepository, AgendaRepository>();
@@ -23,7 +38,8 @@ namespace EventManagement.Middleware.Identity
             Services.AddScoped<ISupportChatRoomRepository, SupportChatRoomRepository>();
             Services.AddScoped<IMessageRepository, MessageRepository>();
 
-            return Services;
+            Services.AddScoped<IDapperHelper, DapperHelper>();
         }
+
     }
 }

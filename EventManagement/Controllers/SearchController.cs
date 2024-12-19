@@ -28,7 +28,7 @@ namespace EventManagement.Controllers
         {
             var pagedListHomeEvent = await _searchService.GetListHomeEvent(searchString, fromDate, toDate, 1,10);
 
-            Pagination pagination = new Pagination()
+            PaginationDto pagination = new PaginationDto()
             {
                 CurrentPage = pagedListHomeEvent.CurrentPage,
                 PageSize = pagedListHomeEvent.PageSize,

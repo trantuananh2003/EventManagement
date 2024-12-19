@@ -1,9 +1,8 @@
-﻿using Azure;
-using EventManagement.Common;
-using EventManagement.Data.Models;
+﻿using EventManagement.Common;
 using EventManagement.Models;
 using EventManagement.Models.ModelsDto.OrganizationDtos;
 using EventManagement.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -22,7 +21,6 @@ namespace EventManagement.Controllers
             _apiResponse = new ApiResponse();
         }
 
-        // Get organization of a user
         [HttpGet("[controller]/{userId}", Name = "GetOrganizationByIdUser")]
         public async Task<ActionResult<ApiResponse>> Get([FromRoute] string userId)
         {
@@ -58,19 +56,6 @@ namespace EventManagement.Controllers
         [HttpPost("[controller]")]
         public async Task<ActionResult<ApiResponse>> Post([FromBody] OrganizationCreateDto model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new ApiResponse
-                {
-                    StatusCode = HttpStatusCode.BadRequest,
-                    IsSuccess = false,
-                    ErrorMessages = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage)
-                        .ToList()
-                });
-            }
-
             await _organizationService.CreateOrganization(model);
 
             return CreatedAtRoute("GetOrganizationByIdUser", new { userId = model.IdUserOwner }, new ApiResponse
@@ -81,6 +66,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpPut("[controller]/{userId}")]
+        [Authorize(Policy = SD_Role_Permission.ManageOrganization_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> Put([FromRoute] string userId, [FromForm] OrganizationUpdateDto modelUpdateDto)
         {
             if (modelUpdateDto == null || !ModelState.IsValid)

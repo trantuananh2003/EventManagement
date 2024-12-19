@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Models.ModelsDto.EventDateDtos
+﻿namespace EventManagement.App.Models.ModelsDto.EventDateDtos
 {
     public class EventDateCombineSaveDto
     {

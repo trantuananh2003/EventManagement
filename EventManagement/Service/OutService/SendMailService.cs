@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using MimeKit;
 
-namespace EventManagement.Service
+namespace EventManagement.Service.OutService
 {
     public class SendMailService
     {

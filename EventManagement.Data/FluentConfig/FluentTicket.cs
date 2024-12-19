@@ -15,9 +15,11 @@ namespace EventManagement.Data.FluentConfig
         {
             modelBuilder.HasKey(x => x.IdTicket);
             modelBuilder.Property(x => x.EventId).IsRequired();
-            modelBuilder.Property(x => x.EventDateId).IsRequired();
             modelBuilder.HasOne(x => x.Event).WithMany().HasForeignKey(x => x.EventId);
-            modelBuilder.HasOne(x => x.EventDate).WithMany().HasForeignKey(x => x.EventDateId);
+            modelBuilder.HasOne(x => x.EventDate)
+                .WithMany(ed => ed.Tickets) 
+                .HasForeignKey(x => x.EventDateId)
+                .OnDelete(DeleteBehavior.Restrict); // Ngăn xóa EventDate khi có Ticket tham chiếu
             modelBuilder.Property(x => x.NameTicket).IsRequired();
             modelBuilder.Property(X => X.SaleStartDate).HasColumnType("datetime").IsRequired();
             modelBuilder.Property(X => X.SaleEndDate).HasColumnType("datetime").IsRequired();

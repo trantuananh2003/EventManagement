@@ -13,6 +13,7 @@ using System.Reflection;
 using EventManagement.Data.DataConnect;
 using System.Text.Json;
 using EventManagement.Service;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EventManagement.Controllers
 {
@@ -37,7 +38,7 @@ namespace EventManagement.Controllers
         }
 
         #region ManageRole
-        [HttpGet("roles")] //Lấy toàn bộ role lên theo organization
+        [HttpGet("roles")]
         public async Task<ActionResult<ApiResponse>> GetAllRole([FromQuery] string organizationId)
         {
             _apiResponse.Result = await _roleManager.Roles.Where(r => r.OrganizationId == organizationId).ToListAsync();
@@ -196,12 +197,13 @@ namespace EventManagement.Controllers
 
         #region ManageMember
         [HttpGet("members")]
+        [Authorize(Policy = SD_Role_Permission.ManageMember_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> GetMembers([FromQuery] string idOrganization, string searchString,
             int pageSize = 0, int pageNumber = 1)
         {
             var pagedListDto = await _organizationService.GetAllMemberByIdOrganization(idOrganization,searchString ,pageSize,pageNumber);
 
-            Pagination pagination = new Pagination()
+            PaginationDto pagination = new PaginationDto()
             {
                 CurrentPage = pagedListDto.CurrentPage,
                 PageSize = pagedListDto.PageSize,
@@ -251,7 +253,9 @@ namespace EventManagement.Controllers
         #endregion
 
         #region ManageUserRole
-        [HttpGet("user-roles")] //Lay toàn bộ role của user
+        //Lay toàn bộ role của user
+        [HttpGet("user-roles")] 
+        [Authorize(Policy = SD_Role_Permission.ManageRole_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> GetUserRoles([FromQuery] string userId,
             [FromQuery] string organizationId)
         {
@@ -275,7 +279,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpPost("user-roles")]  //Thêm role cho user
-        public async Task<ActionResult<ApiResponse>> AddRoleUser([FromBody] RoleUserCreateDto roleUserCreateDto)
+        public async Task<ActionResult<ApiResponse>> UpdateRoleUser([FromBody] RoleUserCreateDto roleUserCreateDto)
         {
             var user = await _userManager.FindByIdAsync(roleUserCreateDto.IdUser);
 

@@ -64,12 +64,11 @@ namespace EventManagement.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResponse>> Post([FromBody] TicketCreateDto itemCreate)
+        public async Task<ActionResult<ApiResponse>> Post([FromBody] TicketCreateDto ticketData)
         {
-            var check = Enum.IsDefined(typeof(EStatusTicket), itemCreate.Status);
-            Console.WriteLine(check);
+            var check = Enum.IsDefined(typeof(EStatusTicket), ticketData.Status);
 
-            if (!ModelState.IsValid && !Enum.IsDefined(typeof(EStatusTicket), itemCreate.Status))
+            if (!ModelState.IsValid && !Enum.IsDefined(typeof(EStatusTicket), ticketData.Status))
             {
                 _apiResponse.StatusCode = HttpStatusCode.BadRequest;
                 _apiResponse.IsSuccess = false;
@@ -80,7 +79,7 @@ namespace EventManagement.Controllers
                 return BadRequest(_apiResponse);
             }
 
-            var itemCreated = await _ticketService.CreateTicket(itemCreate);
+            var itemCreated = await _ticketService.CreateTicket(ticketData);
 
             _apiResponse.IsSuccess = true;
             _apiResponse.Result = itemCreated;

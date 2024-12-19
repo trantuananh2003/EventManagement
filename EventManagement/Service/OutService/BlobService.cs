@@ -1,7 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 
-namespace EventManagement.Service
+namespace EventManagement.Service.OutService
 {
     public interface IBlobService
     {

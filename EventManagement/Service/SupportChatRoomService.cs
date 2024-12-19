@@ -128,10 +128,7 @@ namespace EventManagement.Service
         {
             var listEntity = await _dbMessage.GetAllAsync(x => x.SupportChatRoomId == roomId);
             var listDto = _mapper.Map<List<MessageDto>>(listEntity);
-
-            // Sắp xếp theo SendAt (cũ đến mới)
-            listDto = listDto.OrderBy(x => x.SendAt).ToList(); 
-
+            listDto = listDto.OrderBy(x => x.SendAt).ToList();
             return listDto;
         }
 
@@ -177,5 +174,6 @@ namespace EventManagement.Service
             var entity = await _dbSupportChatRoom.GetAsync(x => x.OrganizationId == organizationId && x.UserId == senderId);
             return _mapper.Map<SupportChatRoomDto>(entity);
         }
+
     }
 }

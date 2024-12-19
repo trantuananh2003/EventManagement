@@ -1,5 +1,7 @@
-﻿using EventManagement.Data.Queries;
+﻿using EventManagement.Common;
+using EventManagement.Data.Queries;
 using EventManagement.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -19,6 +21,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpGet("GetTicketStatics")]
+        [Authorize(Policy = SD_Role_Permission.ViewReportEvent_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> GetTicketStatics(string eventId)
         {
             var ticketStatistics = await _reportEvent.GetTicketStatisticsAsync(eventId);
@@ -39,7 +42,7 @@ namespace EventManagement.Controllers
         {
             var pagedTotalPaymentEvent = await _reportEvent.GetTotalPaymentEvent(searchString, pageNumber, pageSize);
 
-            Pagination pagination = new Pagination()
+            PaginationDto pagination = new PaginationDto()
             {
                 CurrentPage = pagedTotalPaymentEvent.CurrentNumber,
                 PageSize = pagedTotalPaymentEvent.PageSize,

@@ -3,11 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35004.147
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventManagement", "EventManagement\EventManagement.csproj", "{11D5F915-AB01-400C-9DDE-AB50ABC067B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventManagement.App", "EventManagement\EventManagement.App.csproj", "{11D5F915-AB01-400C-9DDE-AB50ABC067B6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventManagement.Data", "EventManagement.Data\EventManagement.Data.csproj", "{FBD376EC-B586-4867-8E6A-D48CF24AB0F2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventManagement.Common", "EventManagement.Common\EventManagement.Common.csproj", "{6C65ADE5-ABF5-4946-9B2E-C7FA0510B391}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventManagement.UnitTest", "EventManagement.UnitTest", "{8B5482DD-9095-462E-B982-9372BD5215CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EM.Application.Test", "EM.Application.Test\EM.Application.Test.csproj", "{14DEA5C9-DE63-4F52-BF85-1259EE7B8F84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EM.App.Controller.Test", "EM.App.Controller.Test\EM.App.Controller.Test.csproj", "{0B4B9D02-C9CB-4547-979C-9C7B1F7D0E71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,9 +33,21 @@ Global
 		{6C65ADE5-ABF5-4946-9B2E-C7FA0510B391}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C65ADE5-ABF5-4946-9B2E-C7FA0510B391}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C65ADE5-ABF5-4946-9B2E-C7FA0510B391}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14DEA5C9-DE63-4F52-BF85-1259EE7B8F84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14DEA5C9-DE63-4F52-BF85-1259EE7B8F84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14DEA5C9-DE63-4F52-BF85-1259EE7B8F84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14DEA5C9-DE63-4F52-BF85-1259EE7B8F84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B4B9D02-C9CB-4547-979C-9C7B1F7D0E71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B4B9D02-C9CB-4547-979C-9C7B1F7D0E71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B4B9D02-C9CB-4547-979C-9C7B1F7D0E71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B4B9D02-C9CB-4547-979C-9C7B1F7D0E71}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{14DEA5C9-DE63-4F52-BF85-1259EE7B8F84} = {8B5482DD-9095-462E-B982-9372BD5215CA}
+		{0B4B9D02-C9CB-4547-979C-9C7B1F7D0E71} = {8B5482DD-9095-462E-B982-9372BD5215CA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DF284A11-BEF1-4798-9407-AB5F63A75985}

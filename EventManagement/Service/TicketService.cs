@@ -64,6 +64,7 @@ namespace EventManagement.Service
             {
                 throw new Exception("Ticket not found");
             }
+
             var modelUpdate = _mapper.Map<Ticket>(itemUpdate);
             await _dbTicket.UpdateAsync(modelUpdate);
             await _dbTicket.SaveAsync();
@@ -75,6 +76,5 @@ namespace EventManagement.Service
             _dbTicket.Remove(ticketEntity);
             await _dbTicket.SaveAsync();
         }
-
     }
 }
