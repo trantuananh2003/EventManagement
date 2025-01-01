@@ -14,10 +14,13 @@ namespace EventManagement.Common
         public const string AddEvent_ClaimValue = "AddEvent";
         public const string UpdateEvent_ClaimValue = "UpdateEvent";
         public const string ViewReportEvent_ClaimValue = "ViewReportEvent";
+
         //Support chat
         public const string SupportChat_ClaimValue = "SupportChat";
+
         //OverView order
         public const string ManageOrderOverView = "OrderOverView";
+
         //Organization - Team manage
         public const string ManageOrganization_ClaimValue = "ManageOrganization";
         public const string ManageMember_ClaimValue = "ManageMember";

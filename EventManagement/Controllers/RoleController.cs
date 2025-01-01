@@ -39,6 +39,7 @@ namespace EventManagement.Controllers
 
         #region ManageRole
         [HttpGet("roles")]
+        [Authorize(Policy = SD_Role_Permission.ManageRole_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> GetAllRole([FromQuery] string organizationId)
         {
             _apiResponse.Result = await _roleManager.Roles.Where(r => r.OrganizationId == organizationId).ToListAsync();
@@ -47,6 +48,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpGet("role/{roleId}")] //Lấy chi tiết về role đó
+        [Authorize(Policy = SD_Role_Permission.ManageRole_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> GetDetailRole([FromRoute] string roleId)
         {
             var role = await _roleManager.FindByIdAsync(roleId);
@@ -74,6 +76,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpPost("role")] //Thêm role vào
+        [Authorize(Policy = SD_Role_Permission.ManageRole_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> AddRoleByOrganization([FromBody] RoleCreateDto roleCreateDto)
         {
             ApplicationRole role = new ApplicationRole
@@ -109,6 +112,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpPut("role/{roleId}")] //Cập nhập role
+        [Authorize(Policy = SD_Role_Permission.ManageRole_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> UpdateRoleDetail([FromRoute] string roleId, [FromBody] RoleUpdateDto modelUpdate)
         {
             var role = await _roleManager.FindByIdAsync(roleId);
@@ -149,6 +153,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpDelete("role/{roleId}")] //Xóa role
+        [Authorize(Policy = SD_Role_Permission.ManageRole_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> DeleteRole([FromRoute] string roleId)
         {
             var role = await _roleManager.FindByIdAsync(roleId);
@@ -208,6 +213,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpPost("member")]
+        [Authorize(Policy = SD_Role_Permission.ManageMember_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> AddMember([FromBody] MemberOrganizationCreateDto model)
         {
             var serviceResult = await _organizationService.AddMember(model.EmailUser,model.IdOrganization);
@@ -228,6 +234,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpDelete("member")]
+        [Authorize(Policy = SD_Role_Permission.ManageMember_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> KickMember([FromQuery] string memberId)
         {
             await _organizationService.KickMember(memberId);
@@ -241,9 +248,8 @@ namespace EventManagement.Controllers
         #endregion
 
         #region ManageUserRole
-        //Lay toàn bộ role của user
-        [HttpGet("user-roles")] 
-        [Authorize(Policy = SD_Role_Permission.ManageRole_ClaimValue)]
+        [HttpGet("user-roles")]
+        [Authorize(Policy = SD_Role_Permission.ManageMember_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> GetUserRoles([FromQuery] string userId,
             [FromQuery] string organizationId)
         {
@@ -267,6 +273,7 @@ namespace EventManagement.Controllers
         }
 
         [HttpPost("user-roles")]  //Thêm role cho user
+        [Authorize(Policy = SD_Role_Permission.ManageMember_ClaimValue)]
         public async Task<ActionResult<ApiResponse>> UpdateRoleUser([FromBody] RoleUserCreateDto roleUserCreateDto)
         {
             var user = await _userManager.FindByIdAsync(roleUserCreateDto.IdUser);

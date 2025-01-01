@@ -15,15 +15,6 @@ namespace EventManagement.Data.Repository
 
         public void Update(Agenda entity)
         {
-            //Agenda agenda = await _db.Agendas.FindAsync(entity.IdAgenda);
-            //if(agenda != null)
-            //{
-            //    agenda.Title = entity.Title;
-            //    agenda.Description = entity.Description;
-            //    agenda.StartTime = entity.StartTime;
-            //    agenda.EndTime = entity.EndTime;
-
-            //}
             _db.Agendas.Update(entity);
         }
     }

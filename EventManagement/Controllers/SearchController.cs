@@ -27,7 +27,7 @@ namespace EventManagement.Controllers
         [HttpGet]
         public async Task<ActionResult<ApiResponse>> GetListHomeEvent(DateTime fromDate, DateTime toDate,string searchString)
         {
-            var pagedListHomeEvent = await _searchService.GetListHomeEvent(searchString, fromDate, toDate, 1,10);
+            var pagedListHomeEvent = await _searchService.GetListHomeEvent(searchString, fromDate, toDate, 1, 10);
 
             PaginationDto pagination = new PaginationDto()
             {
@@ -44,6 +44,7 @@ namespace EventManagement.Controllers
             return Ok(_apiResponse);
         }
 
+        //Get event detail
         [HttpGet("{idEvent}")]
         public async Task<ActionResult<ApiResponse>> GetEventDetail([FromRoute] string idEvent)
         {

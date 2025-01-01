@@ -140,9 +140,9 @@ namespace EventManagement.Controllers
                     Amount = (int)(orderResult.totalPrice * 100),
                     Currency = "usd",
                     PaymentMethodTypes = new List<string>
-                      {
-                        "card",
-                      },
+                    {
+                    "card",
+                    },
                 };
 
                 PaymentIntentService service = new();
@@ -214,7 +214,7 @@ namespace EventManagement.Controllers
                     _apiResponse.ErrorMessages.Add("Payment failed. Please provide a new payment method.");
                     _apiResponse.StatusCode = HttpStatusCode.BadRequest;
 
-                    // Cập nhật trạng thái đơn hàng nếu cần
+                    // Cập nhật trạng thái đơn hàng thất bại
                     await _orderService.UpdateStatusPaymentOrder(order.IdOrderHeader, order.StripePaymentIntentId, EStatusOrder.Fail);
 
                     return BadRequest(_apiResponse);

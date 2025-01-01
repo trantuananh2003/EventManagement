@@ -26,7 +26,6 @@ namespace EventManagement.Service
 
     public class OrganizationService : IOrganizationService
     {
-        private readonly IOrganizationRepository _dbOrganization;
         private readonly IMemberOrganizationRepository _dbMemberOrganization;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBlobService _blobService;
@@ -37,7 +36,6 @@ namespace EventManagement.Service
         public OrganizationService(IOrganizationRepository dbOrganization, IMemberOrganizationRepository dbMemberOrganization, 
             IMapper mapper, UserManager<ApplicationUser> userManager, IBlobService blobService, IUnitOfWork unitOfWork)
         {
-            _dbOrganization = dbOrganization;
             _dbMemberOrganization = dbMemberOrganization;
             _mapper = mapper;
             _userManager = userManager;
@@ -53,7 +51,7 @@ namespace EventManagement.Service
             modelOrganization.IdOrganization = Guid.NewGuid().ToString();
 
             await _unitOfWork.OrganizationRepository.CreateAsync(modelOrganization);
-            await _dbOrganization.SaveAsync();
+            await _unitOfWork.SaveAsync();
 
             var userEntity = await _userManager.FindByIdAsync(modelRequest.IdUserOwner);
             await AddMember(userEntity.Email, modelOrganization.IdOrganization);
@@ -102,6 +100,21 @@ namespace EventManagement.Service
                 listOrganizationDto.Add(_mapper.Map<OrganizationDto>(memberOrganization.Organization));
             }
             return listOrganizationDto;
+        }
+
+
+        public async Task<List<OrganizationDto>> GetAllOrganization()
+        {
+            var listOrganizaiton = await _unitOfWork.OrganizationRepository.GetAllAsync();
+            var listOrganizationDto = _mapper.Map<List<OrganizationDto>>(listOrganizaiton);
+            return listOrganizationDto;
+        }
+
+        public async Task UpdateStatusOrganization(string organizationId, string status)
+        {
+            var entity = await _unitOfWork.OrganizationRepository.GetAsync(x => x.IdOrganization == organizationId, tracked: true);
+            entity.Status = status;
+            await _unitOfWork.OrganizationRepository.SaveAsync();
         }
         #endregion
 
@@ -166,19 +179,6 @@ namespace EventManagement.Service
             await _dbMemberOrganization.SaveAsync();
         }
 
-        public async Task<List<OrganizationDto>> GetAllOrganization()
-        {
-            var listOrganizaiton = await _dbOrganization.GetAllAsync();
-            var listOrganizationDto = _mapper.Map<List<OrganizationDto>>(listOrganizaiton);
-            return listOrganizationDto;
-        }
-
-        public async Task UpdateStatusOrganization(string organizationId, string status)
-        {
-            var entity = await _dbOrganization.GetAsync(x => x.IdOrganization == organizationId, tracked: true);
-            entity.Status = status;
-            await _dbOrganization.SaveAsync();
-        }
         #endregion
     }
 }

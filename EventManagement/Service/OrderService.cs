@@ -27,6 +27,7 @@ namespace EventManagement.Service
         Task<List<OrderDetailDto>> GetOrderDetailDto(string orderHeader);
         Task<OrderResult> CreateOrder(OrderHeaderCreateDto model);
         Task<EStatusOrder> UpdateStatusPaymentOrder(string orderHeaderId,string stripaymentIntentId, EStatusOrder status);
+        Task BackTicket(string orderHeaderId);
     }
 
     public class OrderService : IOrderService
@@ -154,6 +155,10 @@ namespace EventManagement.Service
         {
             await _unitOfWork.OrderHeaderRepository.UpdateStatusOrderHeader(orderHeaderId, stripePaymentIntentId,
                 status.ToString());
+            if(status == EStatusOrder.Fail)
+            {
+                await BackTicket(orderHeaderId);
+            }
             await _unitOfWork.SaveAsync();
             return status;
         }
