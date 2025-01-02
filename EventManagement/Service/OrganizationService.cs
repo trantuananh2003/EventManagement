@@ -59,7 +59,7 @@ namespace EventManagement.Service
 
         public async Task UpdateOrganization(OrganizationUpdateDto modelUpdateDto)
         {
-            var modelEntity = await _dbOrganization.GetAsync(x => x.IdOrganization == modelUpdateDto.IdOrganization);
+            var modelEntity = await _unitOfWork.OrganizationRepository.GetAsync(x => x.IdOrganization == modelUpdateDto.IdOrganization);
             var modelOrganization = _mapper.Map<Organization>(modelUpdateDto);
 
             if (modelUpdateDto.File != null && modelUpdateDto.File.Length > 0)
@@ -73,8 +73,8 @@ namespace EventManagement.Service
                 modelOrganization.UrlImage = await _blobService.UploadBlob(fileName, SD.SD_Storage_Containter, modelUpdateDto.File);
             }
 
-            await _dbOrganization.Update(modelOrganization);
-            await _dbOrganization.SaveAsync();
+            await _unitOfWork.OrganizationRepository.Update(modelOrganization);
+            await _unitOfWork.OrganizationRepository.SaveAsync();
         }
 
         public async Task<OrganizationDto> GetOrganizationById(string id)
