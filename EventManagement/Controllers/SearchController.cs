@@ -25,9 +25,9 @@ namespace EventManagement.Controllers
 
         //Get list event for home page
         [HttpGet]
-        public async Task<ActionResult<ApiResponse>> GetListHomeEvent(DateTime fromDate, DateTime toDate,string searchString)
+        public async Task<ActionResult<ApiResponse>> GetListHomeEvent(DateTime fromDate, DateTime toDate,string searchString, int pageSize = 0, int pageNumber = 1)
         {
-            var pagedListHomeEvent = await _searchService.GetListHomeEvent(searchString, fromDate, toDate, 1, 10);
+            var pagedListHomeEvent = await _searchService.GetListHomeEvent(searchString, fromDate, toDate, pageNumber, pageSize);
 
             PaginationDto pagination = new PaginationDto()
             {
@@ -36,7 +36,7 @@ namespace EventManagement.Controllers
                 TotalRecords = pagedListHomeEvent.TotalCount,
             };
 
-            Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pagedListHomeEvent));
+            Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pagination));
 
             _apiResponse.Result = pagedListHomeEvent.Items;
             _apiResponse.StatusCode = HttpStatusCode.OK;

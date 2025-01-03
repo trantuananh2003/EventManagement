@@ -76,5 +76,6 @@ namespace EventManagement.Service
             _unitOfWork.TicketRepository.Remove(ticketEntity);
             await _unitOfWork.SaveAsync();
         }
+
     }
 }
