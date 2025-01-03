@@ -93,7 +93,7 @@ namespace EventManagement.Service
 
         public async Task<List<OrganizationDto>> GetJoinedOrganizationsByIdUser(string userId)
         {
-            var listMemberOrganization = await _dbMemberOrganization.GetAllAsync(o => o.IdUser == userId, includeProperties: "Organization");
+            var listMemberOrganization = await _unitOfWork.MemberOrganizationRepository.GetAllAsync(o => o.IdUser == userId, includeProperties: "Organization");
             var listOrganizationDto = new List<OrganizationDto>();
             foreach (var memberOrganization in listMemberOrganization)
             {

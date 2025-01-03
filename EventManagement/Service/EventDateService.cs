@@ -52,8 +52,6 @@ namespace EventManagement.Service
             return false;
         }
 
-
-
         public async Task SaveAllEventDate(List<EventDateSaveDto> listEventDateSave, List<EventDateSaveDto> listEventDateDelete, string idEvent)
         {
 

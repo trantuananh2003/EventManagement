@@ -15,6 +15,7 @@ namespace EventManagement.Data.Repository.IRepository
         IEventRepository EventRepository { get; }
         IEventDateRepository EventDateRepository { get; }
         IOrganizationRepository OrganizationRepository { get; }
+        IMemberOrganizationRepository MemberOrganizationRepository { get; }
 
         Task SaveAsync();
     }
