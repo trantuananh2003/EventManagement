@@ -17,12 +17,12 @@ namespace EventManagement.Service
 
     public class TicketService : ITicketService
     {
-        private readonly ITicketRepository _dbTicket;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public TicketService(ITicketRepository dbTicket, IMapper mapper)
+        public TicketService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _dbTicket = dbTicket;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -30,8 +30,8 @@ namespace EventManagement.Service
         {
             var ticketEntity = _mapper.Map<Ticket>(modelRequest);
             ticketEntity.IdTicket = Guid.NewGuid().ToString();
-            await _dbTicket.CreateAsync(ticketEntity);
-            await _dbTicket.SaveAsync();
+            await _unitOfWork.TicketRepository.CreateAsync(ticketEntity);
+            await _unitOfWork.SaveAsync();
             return _mapper.Map<TicketDto>(ticketEntity);
         }
 
@@ -42,7 +42,7 @@ namespace EventManagement.Service
                 return null;
             }
 
-            var listTicketEntity = await _dbTicket.GetAllAsync(u => u.EventId == idEvent, includeProperties: "EventDate");
+            var listTicketEntity = await _unitOfWork.TicketRepository.GetAllAsync(u => u.EventId == idEvent, includeProperties: "EventDate");
             return _mapper.Map<List<TicketDto>>(listTicketEntity);
         }
 
@@ -53,28 +53,28 @@ namespace EventManagement.Service
                 return null;
             }
 
-            var ticketEntity = await _dbTicket.GetAsync(u => u.IdTicket == idTicket);
+            var ticketEntity = await _unitOfWork.TicketRepository.GetAsync(u => u.IdTicket == idTicket);
             return _mapper.Map<TicketDto>(ticketEntity);
         }
 
         public async Task UpdateTicket(TicketUpdateDto itemUpdate, string idTicket)
         {
-            var ticketEntity = await _dbTicket.GetAsync(u => u.IdTicket == idTicket);
+            var ticketEntity = await _unitOfWork.TicketRepository.GetAsync(u => u.IdTicket == idTicket);
             if (ticketEntity == null)
             {
                 throw new Exception("Ticket not found");
             }
 
             var modelUpdate = _mapper.Map<Ticket>(itemUpdate);
-            await _dbTicket.UpdateAsync(modelUpdate);
-            await _dbTicket.SaveAsync();
+            await _unitOfWork.TicketRepository.UpdateAsync(modelUpdate);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task DeleteTicket(string idTicket)
         {
-            var ticketEntity = await _dbTicket.GetAsync(u => u.IdTicket == idTicket);
-            _dbTicket.Remove(ticketEntity);
-            await _dbTicket.SaveAsync();
+            var ticketEntity = await _unitOfWork.TicketRepository.GetAsync(u => u.IdTicket == idTicket);
+            _unitOfWork.TicketRepository.Remove(ticketEntity);
+            await _unitOfWork.SaveAsync();
         }
     }
 }

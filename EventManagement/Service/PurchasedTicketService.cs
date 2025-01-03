@@ -20,12 +20,12 @@ namespace EventManagement.Service
 
     public class PurchasedTicketService : IPurchasedTicketService
     {
-        private readonly IPurchasedTicketRepository _dbPurchasedTicket;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public PurchasedTicketService(IPurchasedTicketRepository dbPurchasedTicket, IMapper mapper)
+        public PurchasedTicketService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _dbPurchasedTicket = dbPurchasedTicket;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -38,13 +38,14 @@ namespace EventManagement.Service
                 OrderHeaderId = idOrderHeader,
                 Status = "Pending"
             };
-            await _dbPurchasedTicket.CreateAsync(purchasedTicket);
-            await _dbPurchasedTicket.SaveAsync();
+
+            await _unitOfWork.PurchasedTicketRepository.CreateAsync(purchasedTicket);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task<PagedListDto<PurchasedTicketDto>> GetAllPurchasedTicket(string idOrderHeader, string searchString, string status, int pageSize = 0, int pageNumber = 1)
         {
-            var pagedPurchasedTicket = await _dbPurchasedTicket.GetPagedAllAsync(x => x.OrderHeaderId == idOrderHeader
+            var pagedPurchasedTicket = await _unitOfWork.PurchasedTicketRepository.GetPagedAllAsync(x => x.OrderHeaderId == idOrderHeader
             && (string.IsNullOrEmpty(searchString) || x.FullName.ToLower().Contains(searchString.ToLower()))
             && (string.IsNullOrEmpty(searchString) || x.Status.ToLower().Contains(searchString.ToLower())),
             pageNumber: pageNumber, pageSize: pageSize);
@@ -64,7 +65,7 @@ namespace EventManagement.Service
 
         public async Task<PurchasedTicketDto> GetPurchasedTicketById(string idPurchasedTicket)
         {
-            var entity = await _dbPurchasedTicket.GetAsync(x => x.IdPurchasedTicket == idPurchasedTicket);
+            var entity = await _unitOfWork.PurchasedTicketRepository.GetAsync(x => x.IdPurchasedTicket == idPurchasedTicket);
             return _mapper.Map<PurchasedTicketDto>(entity);
         }
 
@@ -72,8 +73,8 @@ namespace EventManagement.Service
         {
             var purchasedTicket = _mapper.Map<PurchasedTicket>(model);
             purchasedTicket.IdPurchasedTicket = IdPurchasedTicket;
-            await _dbPurchasedTicket.Update(purchasedTicket);
-            await _dbPurchasedTicket.SaveAsync();
+            await _unitOfWork.PurchasedTicketRepository.Update(purchasedTicket);
+            await _unitOfWork.SaveAsync();
         }
     }
 }

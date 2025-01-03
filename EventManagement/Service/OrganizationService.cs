@@ -26,7 +26,6 @@ namespace EventManagement.Service
 
     public class OrganizationService : IOrganizationService
     {
-        private readonly IMemberOrganizationRepository _dbMemberOrganization;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBlobService _blobService;
         private readonly IMapper _mapper;
@@ -36,7 +35,6 @@ namespace EventManagement.Service
         public OrganizationService(IOrganizationRepository dbOrganization, IMemberOrganizationRepository dbMemberOrganization, 
             IMapper mapper, UserManager<ApplicationUser> userManager, IBlobService blobService, IUnitOfWork unitOfWork)
         {
-            _dbMemberOrganization = dbMemberOrganization;
             _mapper = mapper;
             _userManager = userManager;
             _serviceResult = new ServiceResult();
@@ -74,7 +72,7 @@ namespace EventManagement.Service
             }
 
             await _unitOfWork.OrganizationRepository.Update(modelOrganization);
-            await _unitOfWork.OrganizationRepository.SaveAsync();
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task<OrganizationDto> GetOrganizationById(string id)
@@ -102,7 +100,6 @@ namespace EventManagement.Service
             return listOrganizationDto;
         }
 
-
         public async Task<List<OrganizationDto>> GetAllOrganization()
         {
             var listOrganizaiton = await _unitOfWork.OrganizationRepository.GetAllAsync();
@@ -121,7 +118,7 @@ namespace EventManagement.Service
         #region Member Organization
         public async Task<PagedListDto<MemberOrganizationDto>> GetAllMemberByIdOrganization(string idOrganization, string searchString, int pageSize, int pageNumber)
         {
-            var pagedMemberOrganization = await _dbMemberOrganization.GetPagedAllAsync(o => o.IdOrganization == idOrganization
+            var pagedMemberOrganization = await _unitOfWork.MemberOrganizationRepository.GetPagedAllAsync(o => o.IdOrganization == idOrganization
                     && (string.IsNullOrEmpty(searchString) || o.User.FullName.ToLower().Contains(searchString.ToLower())
                     ), includeProperties: "User",
                     pageSize: pageSize,
@@ -149,7 +146,7 @@ namespace EventManagement.Service
                 _serviceResult.IsSuccess = false;
             }
 
-            var entity = await _dbMemberOrganization.GetAsync(x => x.IdOrganization == idOrganization && x.IdUser == userEntity.Id);
+            var entity = await _unitOfWork.MemberOrganizationRepository.GetAsync(x => x.IdOrganization == idOrganization && x.IdUser == userEntity.Id);
 
             //Kiem tra trung thanh vien
             if(entity != null) //Co thanh vien
@@ -159,14 +156,14 @@ namespace EventManagement.Service
                 return _serviceResult;
             }
             
-             await _dbMemberOrganization.CreateAsync(new MemberOrganization
+             await _unitOfWork.MemberOrganizationRepository.CreateAsync(new MemberOrganization
                                                     {
                                                         MemberId = Guid.NewGuid().ToString(),
                                                         IdOrganization = idOrganization,
                                                         IdUser = _userManager.FindByEmailAsync(emailUser).Result.Id
                                                     });
 
-             await _dbMemberOrganization.SaveAsync();
+             await _unitOfWork.SaveAsync();
 
             _serviceResult.IsSuccess = true;
             return _serviceResult;
@@ -174,11 +171,10 @@ namespace EventManagement.Service
 
         public async Task KickMember(string memberId)
         {
-            var entity = await _dbMemberOrganization.GetAsync(o => o.MemberId == memberId);
-            _dbMemberOrganization.Remove(entity);
-            await _dbMemberOrganization.SaveAsync();
+            var entity = await _unitOfWork.MemberOrganizationRepository.GetAsync(o => o.MemberId == memberId);
+            _unitOfWork.MemberOrganizationRepository.Remove(entity);
+            await _unitOfWork.SaveAsync();
         }
-
         #endregion
     }
 }
